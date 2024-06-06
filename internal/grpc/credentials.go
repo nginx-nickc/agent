@@ -34,5 +34,5 @@ func (t *PerRPCCredentials) GetRequestMetadata(ctx context.Context, uri ...strin
 
 // RequireTransportSecurity indicates whether the credentials requires transport security.
 func (t *PerRPCCredentials) RequireTransportSecurity() bool {
-	return true
+	return false
 }
