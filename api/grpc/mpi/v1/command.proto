@@ -36,8 +36,6 @@ service CommandService {
     // buf:lint:ignore RPC_REQUEST_STANDARD_NAME
     rpc Subscribe(stream DataPlaneResponse) returns (stream ManagementPlaneRequest) {}
 
-    rpc SubscribeExchange(stream SubscribeExchangeRequest) returns (stream SubscribeExchangeResponse) {}
-
     rpc FileExchange(stream Exchange) returns (stream Exchange) {}
 }
 

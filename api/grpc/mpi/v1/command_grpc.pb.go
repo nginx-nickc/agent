@@ -31,7 +31,6 @@ const (
 	CommandService_UpdateDataPlaneStatus_FullMethodName = "/mpi.v1.CommandService/UpdateDataPlaneStatus"
 	CommandService_UpdateDataPlaneHealth_FullMethodName = "/mpi.v1.CommandService/UpdateDataPlaneHealth"
 	CommandService_Subscribe_FullMethodName             = "/mpi.v1.CommandService/Subscribe"
-	CommandService_SubscribeExchange_FullMethodName     = "/mpi.v1.CommandService/SubscribeExchange"
 	CommandService_FileExchange_FullMethodName          = "/mpi.v1.CommandService/FileExchange"
 )
 
@@ -59,7 +58,6 @@ type CommandServiceClient interface {
 	// buf:lint:ignore RPC_RESPONSE_STANDARD_NAME
 	// buf:lint:ignore RPC_REQUEST_STANDARD_NAME
 	Subscribe(ctx context.Context, opts ...grpc.CallOption) (CommandService_SubscribeClient, error)
-	SubscribeExchange(ctx context.Context, opts ...grpc.CallOption) (CommandService_SubscribeExchangeClient, error)
 	FileExchange(ctx context.Context, opts ...grpc.CallOption) (CommandService_FileExchangeClient, error)
 }
 
@@ -133,41 +131,9 @@ func (x *commandServiceSubscribeClient) Recv() (*ManagementPlaneRequest, error) 
 	return m, nil
 }
 
-func (c *commandServiceClient) SubscribeExchange(ctx context.Context, opts ...grpc.CallOption) (CommandService_SubscribeExchangeClient, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	stream, err := c.cc.NewStream(ctx, &CommandService_ServiceDesc.Streams[1], CommandService_SubscribeExchange_FullMethodName, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	x := &commandServiceSubscribeExchangeClient{ClientStream: stream}
-	return x, nil
-}
-
-type CommandService_SubscribeExchangeClient interface {
-	Send(*SubscribeExchangeRequest) error
-	Recv() (*SubscribeExchangeResponse, error)
-	grpc.ClientStream
-}
-
-type commandServiceSubscribeExchangeClient struct {
-	grpc.ClientStream
-}
-
-func (x *commandServiceSubscribeExchangeClient) Send(m *SubscribeExchangeRequest) error {
-	return x.ClientStream.SendMsg(m)
-}
-
-func (x *commandServiceSubscribeExchangeClient) Recv() (*SubscribeExchangeResponse, error) {
-	m := new(SubscribeExchangeResponse)
-	if err := x.ClientStream.RecvMsg(m); err != nil {
-		return nil, err
-	}
-	return m, nil
-}
-
 func (c *commandServiceClient) FileExchange(ctx context.Context, opts ...grpc.CallOption) (CommandService_FileExchangeClient, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	stream, err := c.cc.NewStream(ctx, &CommandService_ServiceDesc.Streams[2], CommandService_FileExchange_FullMethodName, cOpts...)
+	stream, err := c.cc.NewStream(ctx, &CommandService_ServiceDesc.Streams[1], CommandService_FileExchange_FullMethodName, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -221,7 +187,6 @@ type CommandServiceServer interface {
 	// buf:lint:ignore RPC_RESPONSE_STANDARD_NAME
 	// buf:lint:ignore RPC_REQUEST_STANDARD_NAME
 	Subscribe(CommandService_SubscribeServer) error
-	SubscribeExchange(CommandService_SubscribeExchangeServer) error
 	FileExchange(CommandService_FileExchangeServer) error
 }
 
@@ -240,9 +205,6 @@ func (UnimplementedCommandServiceServer) UpdateDataPlaneHealth(context.Context, 
 }
 func (UnimplementedCommandServiceServer) Subscribe(CommandService_SubscribeServer) error {
 	return status.Errorf(codes.Unimplemented, "method Subscribe not implemented")
-}
-func (UnimplementedCommandServiceServer) SubscribeExchange(CommandService_SubscribeExchangeServer) error {
-	return status.Errorf(codes.Unimplemented, "method SubscribeExchange not implemented")
 }
 func (UnimplementedCommandServiceServer) FileExchange(CommandService_FileExchangeServer) error {
 	return status.Errorf(codes.Unimplemented, "method FileExchange not implemented")
@@ -339,32 +301,6 @@ func (x *commandServiceSubscribeServer) Recv() (*DataPlaneResponse, error) {
 	return m, nil
 }
 
-func _CommandService_SubscribeExchange_Handler(srv interface{}, stream grpc.ServerStream) error {
-	return srv.(CommandServiceServer).SubscribeExchange(&commandServiceSubscribeExchangeServer{ServerStream: stream})
-}
-
-type CommandService_SubscribeExchangeServer interface {
-	Send(*SubscribeExchangeResponse) error
-	Recv() (*SubscribeExchangeRequest, error)
-	grpc.ServerStream
-}
-
-type commandServiceSubscribeExchangeServer struct {
-	grpc.ServerStream
-}
-
-func (x *commandServiceSubscribeExchangeServer) Send(m *SubscribeExchangeResponse) error {
-	return x.ServerStream.SendMsg(m)
-}
-
-func (x *commandServiceSubscribeExchangeServer) Recv() (*SubscribeExchangeRequest, error) {
-	m := new(SubscribeExchangeRequest)
-	if err := x.ServerStream.RecvMsg(m); err != nil {
-		return nil, err
-	}
-	return m, nil
-}
-
 func _CommandService_FileExchange_Handler(srv interface{}, stream grpc.ServerStream) error {
 	return srv.(CommandServiceServer).FileExchange(&commandServiceFileExchangeServer{ServerStream: stream})
 }
@@ -415,12 +351,6 @@ var CommandService_ServiceDesc = grpc.ServiceDesc{
 		{
 			StreamName:    "Subscribe",
 			Handler:       _CommandService_Subscribe_Handler,
-			ServerStreams: true,
-			ClientStreams: true,
-		},
-		{
-			StreamName:    "SubscribeExchange",
-			Handler:       _CommandService_SubscribeExchange_Handler,
 			ServerStreams: true,
 			ClientStreams: true,
 		},

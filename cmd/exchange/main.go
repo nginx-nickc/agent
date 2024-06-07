@@ -39,7 +39,7 @@ import (
 var configs embed.FS
 
 const (
-	token      = ""
+	token      = "5Rp9bPpV8JP9Gyiy2M2Rr5t3/aQIzbWlsEvO9+5m/3M="
 	instanceID = "8525cd7a-f221-42f6-ac52-4d97a6a169fa"
 )
 
@@ -69,8 +69,8 @@ func main() {
 		},
 	}
 
-	var streamStandAlone = &cobra.Command{
-		Use:   "stream-standalone",
+	var streamCmd = &cobra.Command{
+		Use:   "stream",
 		Short: "Standalone stream",
 		Long:  `Standalone stream, where the upload/download is independent`,
 		Run: func(cmd *cobra.Command, args []string) {
@@ -80,22 +80,138 @@ func main() {
 			}
 			switch op {
 			case "upload":
-				if err = streamStandaloneUpload(ctx, conn); err != nil {
+				if err = streamUpload(ctx, conn); err != nil {
 					log.Fatal(err)
 				}
 			case "download":
-				if err = streamStandaloneDownload(ctx, conn); err != nil {
+				if err = streamDownload(ctx, conn); err != nil {
 					log.Fatal(err)
 				}
 			}
 		},
 	}
-	rootCmd.AddCommand(streamStandAlone)
+
+	var rpcCmd = &cobra.Command{
+		Use:   "rpc",
+		Short: "rpc",
+		Long:  `rpc using the file service`,
+		Run: func(cmd *cobra.Command, args []string) {
+			op := "upload"
+			if len(args) > 0 && args[0] == "download" {
+				op = "download"
+			}
+			switch op {
+			case "upload":
+				if err = rpcUpload(ctx, conn); err != nil {
+					log.Fatal(err)
+				}
+			case "download":
+				if err = rpcDownload(ctx, conn); err != nil {
+					log.Fatal(err)
+				}
+			}
+		},
+	}
+	rootCmd.AddCommand(streamCmd, rpcCmd)
 	if err = rootCmd.Execute(); err != nil {
 		log.Fatal(err)
 	}
 }
-func streamStandaloneUpload(parent context.Context, conn *grpc.ClientConn) error {
+
+func rpcDownload(parent context.Context, conn *grpc.ClientConn) error {
+	ctx, cancel := context.WithCancel(parent)
+	defer cancel()
+
+	fileServiceClient := pb.NewFileServiceClient(conn)
+	messageMeta := &pb.MessageMeta{
+		MessageId:     uuid.NewString(),
+		CorrelationId: uuid.NewString(),
+		Timestamp:     timestamppb.New(time.Now()),
+	}
+	resp, err := fileServiceClient.GetOverview(ctx, &pb.GetOverviewRequest{
+		MessageMeta: messageMeta,
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
+	tmpPrefix := filepath.Join(os.TempDir(), uuid.NewString())
+	for _, f := range resp.GetOverview().GetFiles() {
+		fn := f.GetFileMeta().GetName()
+		var fc *pb.GetFileResponse
+		fc, err = fileServiceClient.GetFile(ctx, &pb.GetFileRequest{
+			MessageMeta: messageMeta,
+			FileMeta:    f.FileMeta,
+		})
+		if err != nil {
+			log.Fatal(err)
+		}
+		if err = writeFile(tmpPrefix, &pb.FileResponse_File{
+			Meta: f.FileMeta,
+			File: fc.Contents,
+		}); err != nil {
+			log.Fatal(err)
+		}
+		log.Println("got %s", fn)
+	}
+	return nil
+}
+
+func rpcUpload(parent context.Context, conn *grpc.ClientConn) error {
+	ctx, cancel := context.WithCancel(parent)
+	defer cancel()
+
+	fileServiceClient := pb.NewFileServiceClient(conn)
+	fm := readFiles()
+
+	messageMeta := &pb.MessageMeta{
+		MessageId:     uuid.NewString(),
+		CorrelationId: uuid.NewString(),
+		Timestamp:     timestamppb.New(time.Now()),
+	}
+	resp, err := fileServiceClient.UpdateOverview(ctx, &pb.UpdateOverviewRequest{
+		MessageMeta: messageMeta,
+		Overview:    makeOverview(fm),
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	seq := len(resp.Files)
+	for _, meta := range resp.Files {
+		ff, ok := fm[meta.Name]
+		if !ok {
+			// no feedback to the service
+			log.Fatalf("file %s not found", meta.Name)
+		}
+		_, err = fileServiceClient.UpdateFile(ctx, &pb.UpdateFileRequest{
+			MessageMeta: messageMeta,
+			FileSeq:     int32(seq),
+			File: &pb.File{
+				FileMeta: ff.Meta,
+			},
+			Contents: ff.File,
+		})
+		log.Printf("file %s updated", meta.Name)
+		if err != nil {
+			log.Fatal(err)
+		}
+		seq--
+	}
+	return nil
+}
+
+func makeOverview(fm map[string]*pb.FileResponse_File) *pb.FileOverview {
+	fo := make([]*pb.File, 0, len(fm))
+	for _, fr := range fm {
+		fo = append(fo, &pb.File{
+			FileMeta: fr.Meta,
+		})
+	}
+	return &pb.FileOverview{
+		Files: fo,
+	}
+}
+func streamUpload(parent context.Context, conn *grpc.ClientConn) error {
 	ctx, cancel := context.WithCancel(parent)
 	defer cancel()
 
@@ -110,13 +226,6 @@ func streamStandaloneUpload(parent context.Context, conn *grpc.ClientConn) error
 	go me.Run(ctx, &wg)
 
 	fm := readFiles()
-	fo := make([]*pb.File, 0, len(fm))
-	for _, fr := range fm {
-		FMeta := fr.Response.File.Meta
-		fo = append(fo, &pb.File{
-			FileMeta: FMeta,
-		})
-	}
 	if err = me.Send(ctx, &pb.Exchange{
 		Meta: &pb.MessageMeta{
 			MessageId:     uuid.NewString(),
@@ -124,9 +233,7 @@ func streamStandaloneUpload(parent context.Context, conn *grpc.ClientConn) error
 			Timestamp:     timestamppb.New(time.Now()),
 		},
 		Message: &pb.Exchange_Overview{
-			Overview: &pb.FileOverview{
-				Files: fo,
-			},
+			Overview: makeOverview(fm),
 		},
 	}); err != nil {
 		log.Fatal(err)
@@ -141,11 +248,10 @@ func streamStandaloneUpload(parent context.Context, conn *grpc.ClientConn) error
 			switch m := msg.Msg.Message.(type) {
 			case *pb.Exchange_Request:
 				for _, fr := range m.Request.GetFiles() {
-					ffr, ok := fm[fr.Name]
+					ff, ok := fm[fr.Name]
 					if !ok {
 						return status.Error(codes.NotFound, fmt.Sprintf("%s not found", fr.Name))
 					}
-					ff := ffr.Response.File
 					err = me.Send(ctx, &pb.Exchange{
 						Meta: msg.Msg.Meta,
 						Message: &pb.Exchange_Response{
@@ -172,7 +278,7 @@ func streamStandaloneUpload(parent context.Context, conn *grpc.ClientConn) error
 	return nil
 }
 
-func streamStandaloneDownload(parent context.Context, conn *grpc.ClientConn) error {
+func streamDownload(parent context.Context, conn *grpc.ClientConn) error {
 	wg := sync.WaitGroup{}
 	ctx, cancel := context.WithCancel(parent)
 	defer func() {
@@ -239,18 +345,7 @@ func streamStandaloneDownload(parent context.Context, conn *grpc.ClientConn) err
 					log.Printf("unexpected file response: %s\n", fn)
 				}
 				tmpPrefix := filepath.Join(os.TempDir(), uuid.NewString())
-				tmpFN := filepath.Join(tmpPrefix, fn)
-				if os.MkdirAll(filepath.Dir(tmpFN), 0777) != nil {
-					log.Fatal(err)
-				}
-				log.Println("create directory:", tmpFN)
-				var ff *os.File
-				ff, err = os.Create(tmpFN)
-				if err != nil {
-					log.Fatal(err)
-				}
-				_, err = ff.Write(f.File.Contents)
-				if err != nil {
+				if err = writeFile(tmpPrefix, f); err != nil {
 					log.Fatal(err)
 				}
 				delete(reqQuestMap, fn)
@@ -267,6 +362,25 @@ func streamStandaloneDownload(parent context.Context, conn *grpc.ClientConn) err
 			})
 			fmt.Println("state", conn.GetState(), err)
 		}
+	}
+	return nil
+}
+
+func writeFile(prefix string, f *pb.FileResponse_File) error {
+	tmpFN := filepath.Join(prefix, f.Meta.Name)
+	if err := os.MkdirAll(filepath.Dir(tmpFN), 0777); err != nil {
+		return err
+	}
+	log.Println("create file:", tmpFN)
+	var ff *os.File
+	ff, err := os.Create(tmpFN)
+	if err != nil {
+		return err
+	}
+	defer ff.Close()
+	_, err = ff.Write(f.File.Contents)
+	if err != nil {
+		return err
 	}
 	return nil
 }
@@ -296,8 +410,8 @@ func streamStandaloneDownload(parent context.Context, conn *grpc.ClientConn) err
 //	wg.Wait()
 //}
 
-func readFiles() map[string]*pb.Exchange_Response {
-	files := make(map[string]*pb.Exchange_Response)
+func readFiles() map[string]*pb.FileResponse_File {
+	files := make(map[string]*pb.FileResponse_File)
 	base := "testfiles"
 	if err := fs.WalkDir(configs, base,
 		func(path string, d fs.DirEntry, err error) error {
@@ -320,21 +434,15 @@ func readFiles() map[string]*pb.Exchange_Response {
 				return err
 			}
 			fn = filepath.Join("/", fn)
-			files[fn] = &pb.Exchange_Response{
-				Response: &pb.FileResponse{
-					File: &pb.FileResponse_File{
-						Meta: &pb.FileMeta{
-							Name:         fn,
-							Hash:         collections.Hash(content),
-							ModifiedTime: timestamppb.New(stats.ModTime()),
-							Size:         int64(len(content)),
-						},
-						File: &pb.FileContents{Contents: content},
-					},
+			files[fn] = &pb.FileResponse_File{
+				Meta: &pb.FileMeta{
+					Name:         fn,
+					Hash:         collections.Hash(content),
+					ModifiedTime: timestamppb.New(stats.ModTime()),
+					Size:         int64(len(content)),
 				},
+				File: &pb.FileContents{Contents: content},
 			}
-			fmt.Println(path, fn)
-
 			return nil
 
 		}); err != nil {
