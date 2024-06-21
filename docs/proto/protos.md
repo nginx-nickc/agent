@@ -39,7 +39,11 @@
     - [CreateConnectionRequest](#mpi-v1-CreateConnectionRequest)
     - [CreateConnectionResponse](#mpi-v1-CreateConnectionResponse)
     - [DataPlaneResponse](#mpi-v1-DataPlaneResponse)
+    - [Exchange](#mpi-v1-Exchange)
+    - [FileResponse](#mpi-v1-FileResponse)
+    - [FileResponse.File](#mpi-v1-FileResponse-File)
     - [FileServer](#mpi-v1-FileServer)
+    - [FilesRequest](#mpi-v1-FilesRequest)
     - [HealthRequest](#mpi-v1-HealthRequest)
     - [HostInfo](#mpi-v1-HostInfo)
     - [Instance](#mpi-v1-Instance)
@@ -53,9 +57,13 @@
     - [MetricsServer](#mpi-v1-MetricsServer)
     - [NGINXPlusRuntimeInfo](#mpi-v1-NGINXPlusRuntimeInfo)
     - [NGINXRuntimeInfo](#mpi-v1-NGINXRuntimeInfo)
+    - [OverviewRequest](#mpi-v1-OverviewRequest)
     - [ReleaseInfo](#mpi-v1-ReleaseInfo)
     - [Resource](#mpi-v1-Resource)
     - [StatusRequest](#mpi-v1-StatusRequest)
+    - [SubscribeExchangeMessage](#mpi-v1-SubscribeExchangeMessage)
+    - [SubscribeExchangeRequest](#mpi-v1-SubscribeExchangeRequest)
+    - [SubscribeExchangeResponse](#mpi-v1-SubscribeExchangeResponse)
     - [UpdateDataPlaneHealthRequest](#mpi-v1-UpdateDataPlaneHealthRequest)
     - [UpdateDataPlaneHealthResponse](#mpi-v1-UpdateDataPlaneHealthResponse)
     - [UpdateDataPlaneStatusRequest](#mpi-v1-UpdateDataPlaneStatusRequest)
@@ -297,8 +305,10 @@ Represents the update file request
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
+| message_meta | [MessageMeta](#mpi-v1-MessageMeta) |  | meta should be the same through out the request |
 | file | [File](#mpi-v1-File) |  | The file requested to be updated |
 | contents | [FileContents](#mpi-v1-FileContents) |  | The contents of a file |
+| file_seq | [int32](#int32) |  | seq of file base on the outstanding request, counting down, zero indicates no more file to transfer |
 
 
 
@@ -339,7 +349,13 @@ Represents a the payload for an overview an update of  files for a particular co
 <a name="mpi-v1-UpdateOverviewResponse"></a>
 
 ### UpdateOverviewResponse
-Represents a the response from an UpdateOverviewRequest - intentionally left empty
+Represents a the response from an UpdateOverviewRequest. Currently this returns a list of FileMeta in which the
+management plane is requesting. It&#39;s up to the client to send it to the management plane.
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| files | [FileMeta](#mpi-v1-FileMeta) | repeated |  |
 
 
 
@@ -535,6 +551,58 @@ Reports the status of an associated command. This may be in response to a Manage
 | ----- | ---- | ----- | ----------- |
 | message_meta | [MessageMeta](#mpi-v1-MessageMeta) |  | Meta-information associated with a message |
 | command_response | [CommandResponse](#mpi-v1-CommandResponse) |  | The command response with the associated request |
+| request | [FilesRequest](#mpi-v1-FilesRequest) |  |  |
+| response | [FileResponse](#mpi-v1-FileResponse) |  |  |
+
+
+
+
+
+
+<a name="mpi-v1-Exchange"></a>
+
+### Exchange
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| meta | [MessageMeta](#mpi-v1-MessageMeta) |  | Meta-information associated with a message |
+| request | [FilesRequest](#mpi-v1-FilesRequest) |  |  |
+| response | [FileResponse](#mpi-v1-FileResponse) |  |  |
+| overview_req | [OverviewRequest](#mpi-v1-OverviewRequest) |  |  |
+| overview | [FileOverview](#mpi-v1-FileOverview) |  |  |
+
+
+
+
+
+
+<a name="mpi-v1-FileResponse"></a>
+
+### FileResponse
+Represents the response to a get file request
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| file | [FileResponse.File](#mpi-v1-FileResponse-File) |  |  |
+
+
+
+
+
+
+<a name="mpi-v1-FileResponse-File"></a>
+
+### FileResponse.File
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| meta | [FileMeta](#mpi-v1-FileMeta) |  |  |
+| file | [FileContents](#mpi-v1-FileContents) |  |  |
 
 
 
@@ -545,6 +613,21 @@ Reports the status of an associated command. This may be in response to a Manage
 
 ### FileServer
 The file settings associated with file server for configurations
+
+
+
+
+
+
+<a name="mpi-v1-FilesRequest"></a>
+
+### FilesRequest
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| files | [FileMeta](#mpi-v1-FileMeta) | repeated |  |
 
 
 
@@ -760,6 +843,16 @@ A set of runtime NGINX OSS settings
 
 
 
+<a name="mpi-v1-OverviewRequest"></a>
+
+### OverviewRequest
+
+
+
+
+
+
+
 <a name="mpi-v1-ReleaseInfo"></a>
 
 ### ReleaseInfo
@@ -801,6 +894,56 @@ A representation of instances and runtime resource information
 
 ### StatusRequest
 Additional information associated with a StatusRequest
+
+
+
+
+
+
+<a name="mpi-v1-SubscribeExchangeMessage"></a>
+
+### SubscribeExchangeMessage
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| request | [FilesRequest](#mpi-v1-FilesRequest) |  |  |
+| response | [FileResponse](#mpi-v1-FileResponse) |  |  |
+| config_apply_request | [ConfigApplyRequest](#mpi-v1-ConfigApplyRequest) |  | if overview is missing, triggers a rpc GetOverview(ConfigVersion) first |
+| config_upload_request | [ConfigUploadRequest](#mpi-v1-ConfigUploadRequest) |  | triggers a series of rpc UpdateFile(File) for that instances |
+
+
+
+
+
+
+<a name="mpi-v1-SubscribeExchangeRequest"></a>
+
+### SubscribeExchangeRequest
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| meta | [MessageMeta](#mpi-v1-MessageMeta) |  | Meta-information associated with a message |
+| message | [SubscribeExchangeMessage](#mpi-v1-SubscribeExchangeMessage) |  |  |
+
+
+
+
+
+
+<a name="mpi-v1-SubscribeExchangeResponse"></a>
+
+### SubscribeExchangeResponse
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| meta | [MessageMeta](#mpi-v1-MessageMeta) |  | Meta-information associated with a message |
+| message | [SubscribeExchangeMessage](#mpi-v1-SubscribeExchangeMessage) |  |  |
 
 
 
@@ -913,6 +1056,7 @@ Messages sent but not yet Ack’d must be kept in an “in-flight” buffer as t
 | UpdateDataPlaneStatus | [UpdateDataPlaneStatusRequest](#mpi-v1-UpdateDataPlaneStatusRequest) | [UpdateDataPlaneStatusResponse](#mpi-v1-UpdateDataPlaneStatusResponse) | Reports on instances and their configurations |
 | UpdateDataPlaneHealth | [UpdateDataPlaneHealthRequest](#mpi-v1-UpdateDataPlaneHealthRequest) | [UpdateDataPlaneHealthResponse](#mpi-v1-UpdateDataPlaneHealthResponse) | Reports on instance health |
 | Subscribe | [DataPlaneResponse](#mpi-v1-DataPlaneResponse) stream | [ManagementPlaneRequest](#mpi-v1-ManagementPlaneRequest) stream | A decoupled communication mechanism between the data plane and management plane. buf:lint:ignore RPC_RESPONSE_STANDARD_NAME buf:lint:ignore RPC_REQUEST_STANDARD_NAME |
+| FileExchange | [Exchange](#mpi-v1-Exchange) stream | [Exchange](#mpi-v1-Exchange) stream |  |
 
  
 

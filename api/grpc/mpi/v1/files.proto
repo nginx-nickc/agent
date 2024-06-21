@@ -51,8 +51,11 @@ message UpdateOverviewRequest {
     FileOverview overview = 2;
 }
 
-// Represents a the response from an UpdateOverviewRequest - intentionally left empty
-message UpdateOverviewResponse {}
+// Represents a the response from an UpdateOverviewRequest. Currently this returns a list of FileMeta in which the
+// management plane is requesting. It's up to the client to send it to the management plane.
+message UpdateOverviewResponse {
+    repeated FileMeta files = 1;
+}
 
 // Represents a specific configuration version associated with an instance
 message ConfigVersion {
@@ -127,10 +130,15 @@ message FileMeta {
 
 // Represents the update file request
 message UpdateFileRequest {
+    // meta should be the same through out the request
+    mpi.v1.MessageMeta message_meta = 1;
     // The file requested to be updated
-    File file = 1;
+    File file = 2;
     // The contents of a file
-    FileContents contents = 2;
+    FileContents contents = 3;
+    // seq of file base on the outstanding request, counting down, zero indicates no more file to transfer
+    int32 file_seq = 4;
+    
 }
 
 // Represents the response to an update file request

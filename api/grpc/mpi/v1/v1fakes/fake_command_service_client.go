@@ -5,8 +5,9 @@ import (
 	"context"
 	"sync"
 
-	v1 "github.com/nginx/agent/v3/api/grpc/mpi/v1"
 	"google.golang.org/grpc"
+
+	v1 "github.com/nginx/agent/v3/api/grpc/mpi/v1"
 )
 
 type FakeCommandServiceClient struct {

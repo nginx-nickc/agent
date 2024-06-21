@@ -508,6 +508,40 @@ func (m *UpdateOverviewResponse) validate(all bool) error {
 
 	var errors []error
 
+	for idx, item := range m.GetFiles() {
+		_, _ = idx, item
+
+		if all {
+			switch v := interface{}(item).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, UpdateOverviewResponseValidationError{
+						field:  fmt.Sprintf("Files[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, UpdateOverviewResponseValidationError{
+						field:  fmt.Sprintf("Files[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return UpdateOverviewResponseValidationError{
+					field:  fmt.Sprintf("Files[%v]", idx),
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	}
+
 	if len(errors) > 0 {
 		return UpdateOverviewResponseMultiError(errors)
 	}
@@ -1532,6 +1566,35 @@ func (m *UpdateFileRequest) validate(all bool) error {
 	var errors []error
 
 	if all {
+		switch v := interface{}(m.GetMessageMeta()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, UpdateFileRequestValidationError{
+					field:  "MessageMeta",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, UpdateFileRequestValidationError{
+					field:  "MessageMeta",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetMessageMeta()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return UpdateFileRequestValidationError{
+				field:  "MessageMeta",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	if all {
 		switch v := interface{}(m.GetFile()).(type) {
 		case interface{ ValidateAll() error }:
 			if err := v.ValidateAll(); err != nil {
@@ -1588,6 +1651,8 @@ func (m *UpdateFileRequest) validate(all bool) error {
 			}
 		}
 	}
+
+	// no validation rules for FileSeq
 
 	if len(errors) > 0 {
 		return UpdateFileRequestMultiError(errors)

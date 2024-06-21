@@ -35,8 +35,58 @@ service CommandService {
     // buf:lint:ignore RPC_RESPONSE_STANDARD_NAME
     // buf:lint:ignore RPC_REQUEST_STANDARD_NAME
     rpc Subscribe(stream DataPlaneResponse) returns (stream ManagementPlaneRequest) {}
+
+    rpc FileExchange(stream Exchange) returns (stream Exchange) {}
 }
 
+message SubscribeExchangeRequest {
+    // Meta-information associated with a message
+    mpi.v1.MessageMeta meta = 1;
+    SubscribeExchangeMessage message = 2;
+}
+
+message SubscribeExchangeResponse {
+    // Meta-information associated with a message
+    mpi.v1.MessageMeta meta = 1;
+    SubscribeExchangeMessage message = 2;
+}
+
+message SubscribeExchangeMessage {
+    oneof message {
+        FilesRequest request = 2;
+        FileResponse response = 3;
+        // if overview is missing, triggers a rpc GetOverview(ConfigVersion) first
+        ConfigApplyRequest config_apply_request = 4;
+        // triggers a series of rpc UpdateFile(File) for that instances
+        ConfigUploadRequest config_upload_request = 5;
+    }
+}
+
+message OverviewRequest {
+    
+}
+message Exchange {
+    // Meta-information associated with a message
+    mpi.v1.MessageMeta meta = 1;
+    oneof message {
+        FilesRequest request = 2;
+        FileResponse response = 3;
+        OverviewRequest overview_req = 4;
+        FileOverview overview = 5;
+    }
+}
+message FilesRequest {
+    repeated FileMeta files = 2;
+}
+
+// Represents the response to a get file request
+message FileResponse {
+    message File {
+        FileMeta meta = 1;
+        FileContents file = 2;
+    }
+    File file = 1;
+}
 // The connection request is an initial handshake to establish a connection, sending NGINX Agent instance information
 message CreateConnectionRequest {
     // Meta-information associated with a message
@@ -145,6 +195,11 @@ message DataPlaneResponse {
     mpi.v1.MessageMeta message_meta = 1;
     // The command response with the associated request
     mpi.v1.CommandResponse command_response = 2;
+
+    oneof message {
+        FilesRequest request = 3;
+        FileResponse response = 4;
+    }
 }
 
 // A Management Plane request for information, triggers an associated rpc on the Data Plane

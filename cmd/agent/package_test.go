@@ -8,8 +8,9 @@ package main
 import (
 	"testing"
 
-	"github.com/nginx/agent/v3/test/helpers"
 	"go.uber.org/goleak"
+
+	"github.com/nginx/agent/v3/test/helpers"
 )
 
 func TestMain(m *testing.M) {
