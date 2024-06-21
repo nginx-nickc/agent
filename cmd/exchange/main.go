@@ -12,7 +12,9 @@ package main
 import (
 	"context"
 	"embed"
+	"errors"
 	"fmt"
+	"io"
 	"io/fs"
 	"log"
 	"os"
@@ -44,6 +46,7 @@ const (
 )
 
 func main() {
+	log.SetFlags(log.LstdFlags | log.Lshortfile)
 	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer cancel()
 	conn, err := grpc.NewClient("localhost:8888",
@@ -59,7 +62,6 @@ func main() {
 	}
 	defer conn.Close()
 
-	//_ = readFiles()
 	var rootCmd = &cobra.Command{
 		Use:   "exchange",
 		Short: "Exchange is a gRPC test client for connecting to local N1SC dataplane-ctrl",
@@ -151,7 +153,7 @@ func rpcDownload(parent context.Context, conn *grpc.ClientConn) error {
 		}); err != nil {
 			log.Fatal(err)
 		}
-		log.Println("got %s", fn)
+		log.Printf("got %s", fn)
 	}
 	return nil
 }
@@ -191,7 +193,6 @@ func rpcUpload(parent context.Context, conn *grpc.ClientConn) error {
 			},
 			Contents: ff.File,
 		})
-		log.Printf("file %s updated", meta.Name)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -243,6 +244,9 @@ func streamUpload(parent context.Context, conn *grpc.ClientConn) error {
 		case <-ctx.Done():
 			return ctx.Err()
 		case err = <-me.Errors():
+			if errors.Is(err, context.Canceled) || errors.Is(err, io.EOF) {
+				return nil
+			}
 			log.Fatalf("Received error: %s\n", err)
 		case msg := <-me.Messages():
 			switch m := msg.Msg.Message.(type) {

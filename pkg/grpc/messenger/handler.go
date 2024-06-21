@@ -12,6 +12,7 @@ package messenger
 import (
 	"context"
 	"errors"
+	"fmt"
 	"sync"
 )
 
@@ -115,7 +116,7 @@ func (h *Handler[In, Out]) handleSend(ctx context.Context, _ *sync.WaitGroup) {
 					return
 				}
 
-				h.error <- err
+				h.error <- fmt.Errorf("failed to send message: %w", err)
 				return
 			}
 		}
@@ -142,7 +143,7 @@ func (h *Handler[In, Out]) handleRecv(ctx context.Context, wg *sync.WaitGroup) {
 			select {
 			case <-ctx.Done():
 				return
-			case h.error <- err:
+			case h.error <- fmt.Errorf("receive message: %w (end of stream)", err):
 			}
 			return
 		}
