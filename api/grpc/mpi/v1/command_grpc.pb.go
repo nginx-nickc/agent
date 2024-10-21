@@ -27,36 +27,25 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	CommandService_CreateConnection_FullMethodName      = "/mpi.v1.CommandService/CreateConnection"
-	CommandService_UpdateDataPlaneStatus_FullMethodName = "/mpi.v1.CommandService/UpdateDataPlaneStatus"
-	CommandService_UpdateDataPlaneHealth_FullMethodName = "/mpi.v1.CommandService/UpdateDataPlaneHealth"
-	CommandService_Subscribe_FullMethodName             = "/mpi.v1.CommandService/Subscribe"
+	CommandService_GetFile_FullMethodName        = "/mpi.v1.CommandService/GetFile"
+	CommandService_UpdateFile_FullMethodName     = "/mpi.v1.CommandService/UpdateFile"
+	CommandService_CommandChannel_FullMethodName = "/mpi.v1.CommandService/CommandChannel"
 )
 
 // CommandServiceClient is the client API for CommandService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 //
-// A service outlining the command and control options for a Data Plane Client
-// All operations are written from a client perspective
-// The RPC calls generally flow Client -> Server, except for Subscribe which contains a bidirectional stream
-// The ManagementPlaneRequest sent in the Subscribe stream triggers one or more client actions.
-// Messages provided by the Management Plane must be a FIFO ordered queue. Messages in the queue must have a monotonically-increasing integer index.
-// The indexes do not need to be sequential. The index must be a 64-bit signed integer.
-// The index must not reset for the entire lifetime of a unique Agent (i.e. the index does not reset to 0 only because of a temporary disconnection or new session).
-// Messages must not be removed from the Management Plane queue until Ack’d by the Agent.
-// Messages sent but not yet Ack’d must be kept in an “in-flight” buffer as they may need to be retried.
+// A service outlining the command and control options for a Data Plane Client. CommandMessage is common between
+// request/response for demonstration purpose only. It may be desirable to have specific request (from the agent)
+// and response (from the server), but naming should be keeping with convention (Request from agent, Response from server).
 type CommandServiceClient interface {
-	// Connects NGINX Agent to the Management Plane agnostic of instance data
-	CreateConnection(ctx context.Context, in *CreateConnectionRequest, opts ...grpc.CallOption) (*CreateConnectionResponse, error)
-	// Reports on instances and their configurations
-	UpdateDataPlaneStatus(ctx context.Context, in *UpdateDataPlaneStatusRequest, opts ...grpc.CallOption) (*UpdateDataPlaneStatusResponse, error)
-	// Reports on instance health
-	UpdateDataPlaneHealth(ctx context.Context, in *UpdateDataPlaneHealthRequest, opts ...grpc.CallOption) (*UpdateDataPlaneHealthResponse, error)
-	// A decoupled communication mechanism between the data plane and management plane.
-	// buf:lint:ignore RPC_RESPONSE_STANDARD_NAME
-	// buf:lint:ignore RPC_REQUEST_STANDARD_NAME
-	Subscribe(ctx context.Context, opts ...grpc.CallOption) (grpc.BidiStreamingClient[DataPlaneResponse, ManagementPlaneRequest], error)
+	// Get the file contents for a particular file
+	GetFile(ctx context.Context, in *GetFileRequest, opts ...grpc.CallOption) (*GetFileResponse, error)
+	// Update a file from the Agent to the Server
+	UpdateFile(ctx context.Context, in *UpdateFileRequest, opts ...grpc.CallOption) (*UpdateFileResponse, error)
+	// a bi-directional stream using the same CommandMessage for agent and management-plane
+	CommandChannel(ctx context.Context, opts ...grpc.CallOption) (grpc.BidiStreamingClient[CommandMessage, CommandMessage], error)
 }
 
 type commandServiceClient struct {
@@ -67,73 +56,53 @@ func NewCommandServiceClient(cc grpc.ClientConnInterface) CommandServiceClient {
 	return &commandServiceClient{cc}
 }
 
-func (c *commandServiceClient) CreateConnection(ctx context.Context, in *CreateConnectionRequest, opts ...grpc.CallOption) (*CreateConnectionResponse, error) {
+func (c *commandServiceClient) GetFile(ctx context.Context, in *GetFileRequest, opts ...grpc.CallOption) (*GetFileResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(CreateConnectionResponse)
-	err := c.cc.Invoke(ctx, CommandService_CreateConnection_FullMethodName, in, out, cOpts...)
+	out := new(GetFileResponse)
+	err := c.cc.Invoke(ctx, CommandService_GetFile_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *commandServiceClient) UpdateDataPlaneStatus(ctx context.Context, in *UpdateDataPlaneStatusRequest, opts ...grpc.CallOption) (*UpdateDataPlaneStatusResponse, error) {
+func (c *commandServiceClient) UpdateFile(ctx context.Context, in *UpdateFileRequest, opts ...grpc.CallOption) (*UpdateFileResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(UpdateDataPlaneStatusResponse)
-	err := c.cc.Invoke(ctx, CommandService_UpdateDataPlaneStatus_FullMethodName, in, out, cOpts...)
+	out := new(UpdateFileResponse)
+	err := c.cc.Invoke(ctx, CommandService_UpdateFile_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *commandServiceClient) UpdateDataPlaneHealth(ctx context.Context, in *UpdateDataPlaneHealthRequest, opts ...grpc.CallOption) (*UpdateDataPlaneHealthResponse, error) {
+func (c *commandServiceClient) CommandChannel(ctx context.Context, opts ...grpc.CallOption) (grpc.BidiStreamingClient[CommandMessage, CommandMessage], error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(UpdateDataPlaneHealthResponse)
-	err := c.cc.Invoke(ctx, CommandService_UpdateDataPlaneHealth_FullMethodName, in, out, cOpts...)
+	stream, err := c.cc.NewStream(ctx, &CommandService_ServiceDesc.Streams[0], CommandService_CommandChannel_FullMethodName, cOpts...)
 	if err != nil {
 		return nil, err
 	}
-	return out, nil
-}
-
-func (c *commandServiceClient) Subscribe(ctx context.Context, opts ...grpc.CallOption) (grpc.BidiStreamingClient[DataPlaneResponse, ManagementPlaneRequest], error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	stream, err := c.cc.NewStream(ctx, &CommandService_ServiceDesc.Streams[0], CommandService_Subscribe_FullMethodName, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	x := &grpc.GenericClientStream[DataPlaneResponse, ManagementPlaneRequest]{ClientStream: stream}
+	x := &grpc.GenericClientStream[CommandMessage, CommandMessage]{ClientStream: stream}
 	return x, nil
 }
 
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
-type CommandService_SubscribeClient = grpc.BidiStreamingClient[DataPlaneResponse, ManagementPlaneRequest]
+type CommandService_CommandChannelClient = grpc.BidiStreamingClient[CommandMessage, CommandMessage]
 
 // CommandServiceServer is the server API for CommandService service.
 // All implementations should embed UnimplementedCommandServiceServer
 // for forward compatibility.
 //
-// A service outlining the command and control options for a Data Plane Client
-// All operations are written from a client perspective
-// The RPC calls generally flow Client -> Server, except for Subscribe which contains a bidirectional stream
-// The ManagementPlaneRequest sent in the Subscribe stream triggers one or more client actions.
-// Messages provided by the Management Plane must be a FIFO ordered queue. Messages in the queue must have a monotonically-increasing integer index.
-// The indexes do not need to be sequential. The index must be a 64-bit signed integer.
-// The index must not reset for the entire lifetime of a unique Agent (i.e. the index does not reset to 0 only because of a temporary disconnection or new session).
-// Messages must not be removed from the Management Plane queue until Ack’d by the Agent.
-// Messages sent but not yet Ack’d must be kept in an “in-flight” buffer as they may need to be retried.
+// A service outlining the command and control options for a Data Plane Client. CommandMessage is common between
+// request/response for demonstration purpose only. It may be desirable to have specific request (from the agent)
+// and response (from the server), but naming should be keeping with convention (Request from agent, Response from server).
 type CommandServiceServer interface {
-	// Connects NGINX Agent to the Management Plane agnostic of instance data
-	CreateConnection(context.Context, *CreateConnectionRequest) (*CreateConnectionResponse, error)
-	// Reports on instances and their configurations
-	UpdateDataPlaneStatus(context.Context, *UpdateDataPlaneStatusRequest) (*UpdateDataPlaneStatusResponse, error)
-	// Reports on instance health
-	UpdateDataPlaneHealth(context.Context, *UpdateDataPlaneHealthRequest) (*UpdateDataPlaneHealthResponse, error)
-	// A decoupled communication mechanism between the data plane and management plane.
-	// buf:lint:ignore RPC_RESPONSE_STANDARD_NAME
-	// buf:lint:ignore RPC_REQUEST_STANDARD_NAME
-	Subscribe(grpc.BidiStreamingServer[DataPlaneResponse, ManagementPlaneRequest]) error
+	// Get the file contents for a particular file
+	GetFile(context.Context, *GetFileRequest) (*GetFileResponse, error)
+	// Update a file from the Agent to the Server
+	UpdateFile(context.Context, *UpdateFileRequest) (*UpdateFileResponse, error)
+	// a bi-directional stream using the same CommandMessage for agent and management-plane
+	CommandChannel(grpc.BidiStreamingServer[CommandMessage, CommandMessage]) error
 }
 
 // UnimplementedCommandServiceServer should be embedded to have
@@ -143,17 +112,14 @@ type CommandServiceServer interface {
 // pointer dereference when methods are called.
 type UnimplementedCommandServiceServer struct{}
 
-func (UnimplementedCommandServiceServer) CreateConnection(context.Context, *CreateConnectionRequest) (*CreateConnectionResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method CreateConnection not implemented")
+func (UnimplementedCommandServiceServer) GetFile(context.Context, *GetFileRequest) (*GetFileResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetFile not implemented")
 }
-func (UnimplementedCommandServiceServer) UpdateDataPlaneStatus(context.Context, *UpdateDataPlaneStatusRequest) (*UpdateDataPlaneStatusResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method UpdateDataPlaneStatus not implemented")
+func (UnimplementedCommandServiceServer) UpdateFile(context.Context, *UpdateFileRequest) (*UpdateFileResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateFile not implemented")
 }
-func (UnimplementedCommandServiceServer) UpdateDataPlaneHealth(context.Context, *UpdateDataPlaneHealthRequest) (*UpdateDataPlaneHealthResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method UpdateDataPlaneHealth not implemented")
-}
-func (UnimplementedCommandServiceServer) Subscribe(grpc.BidiStreamingServer[DataPlaneResponse, ManagementPlaneRequest]) error {
-	return status.Errorf(codes.Unimplemented, "method Subscribe not implemented")
+func (UnimplementedCommandServiceServer) CommandChannel(grpc.BidiStreamingServer[CommandMessage, CommandMessage]) error {
+	return status.Errorf(codes.Unimplemented, "method CommandChannel not implemented")
 }
 func (UnimplementedCommandServiceServer) testEmbeddedByValue() {}
 
@@ -175,66 +141,48 @@ func RegisterCommandServiceServer(s grpc.ServiceRegistrar, srv CommandServiceSer
 	s.RegisterService(&CommandService_ServiceDesc, srv)
 }
 
-func _CommandService_CreateConnection_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(CreateConnectionRequest)
+func _CommandService_GetFile_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetFileRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(CommandServiceServer).CreateConnection(ctx, in)
+		return srv.(CommandServiceServer).GetFile(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: CommandService_CreateConnection_FullMethodName,
+		FullMethod: CommandService_GetFile_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(CommandServiceServer).CreateConnection(ctx, req.(*CreateConnectionRequest))
+		return srv.(CommandServiceServer).GetFile(ctx, req.(*GetFileRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _CommandService_UpdateDataPlaneStatus_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(UpdateDataPlaneStatusRequest)
+func _CommandService_UpdateFile_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateFileRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(CommandServiceServer).UpdateDataPlaneStatus(ctx, in)
+		return srv.(CommandServiceServer).UpdateFile(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: CommandService_UpdateDataPlaneStatus_FullMethodName,
+		FullMethod: CommandService_UpdateFile_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(CommandServiceServer).UpdateDataPlaneStatus(ctx, req.(*UpdateDataPlaneStatusRequest))
+		return srv.(CommandServiceServer).UpdateFile(ctx, req.(*UpdateFileRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _CommandService_UpdateDataPlaneHealth_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(UpdateDataPlaneHealthRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(CommandServiceServer).UpdateDataPlaneHealth(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: CommandService_UpdateDataPlaneHealth_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(CommandServiceServer).UpdateDataPlaneHealth(ctx, req.(*UpdateDataPlaneHealthRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _CommandService_Subscribe_Handler(srv interface{}, stream grpc.ServerStream) error {
-	return srv.(CommandServiceServer).Subscribe(&grpc.GenericServerStream[DataPlaneResponse, ManagementPlaneRequest]{ServerStream: stream})
+func _CommandService_CommandChannel_Handler(srv interface{}, stream grpc.ServerStream) error {
+	return srv.(CommandServiceServer).CommandChannel(&grpc.GenericServerStream[CommandMessage, CommandMessage]{ServerStream: stream})
 }
 
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
-type CommandService_SubscribeServer = grpc.BidiStreamingServer[DataPlaneResponse, ManagementPlaneRequest]
+type CommandService_CommandChannelServer = grpc.BidiStreamingServer[CommandMessage, CommandMessage]
 
 // CommandService_ServiceDesc is the grpc.ServiceDesc for CommandService service.
 // It's only intended for direct use with grpc.RegisterService,
@@ -244,22 +192,18 @@ var CommandService_ServiceDesc = grpc.ServiceDesc{
 	HandlerType: (*CommandServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "CreateConnection",
-			Handler:    _CommandService_CreateConnection_Handler,
+			MethodName: "GetFile",
+			Handler:    _CommandService_GetFile_Handler,
 		},
 		{
-			MethodName: "UpdateDataPlaneStatus",
-			Handler:    _CommandService_UpdateDataPlaneStatus_Handler,
-		},
-		{
-			MethodName: "UpdateDataPlaneHealth",
-			Handler:    _CommandService_UpdateDataPlaneHealth_Handler,
+			MethodName: "UpdateFile",
+			Handler:    _CommandService_UpdateFile_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{
 		{
-			StreamName:    "Subscribe",
-			Handler:       _CommandService_Subscribe_Handler,
+			StreamName:    "CommandChannel",
+			Handler:       _CommandService_CommandChannel_Handler,
 			ServerStreams: true,
 			ClientStreams: true,
 		},

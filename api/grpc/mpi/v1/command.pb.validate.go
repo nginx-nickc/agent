@@ -35,6 +35,845 @@ var (
 	_ = sort.Sort
 )
 
+// Validate checks the field values on ManagementPlaneRequestReqOnly with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *ManagementPlaneRequestReqOnly) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on ManagementPlaneRequestReqOnly with
+// the rules defined in the proto definition for this message. If any rules
+// are violated, the result is a list of violation errors wrapped in
+// ManagementPlaneRequestReqOnlyMultiError, or nil if none found.
+func (m *ManagementPlaneRequestReqOnly) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *ManagementPlaneRequestReqOnly) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	switch v := m.Request.(type) {
+	case *ManagementPlaneRequestReqOnly_StatusRequest:
+		if v == nil {
+			err := ManagementPlaneRequestReqOnlyValidationError{
+				field:  "Request",
+				reason: "oneof value cannot be a typed-nil",
+			}
+			if !all {
+				return err
+			}
+			errors = append(errors, err)
+		}
+
+		if all {
+			switch v := interface{}(m.GetStatusRequest()).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, ManagementPlaneRequestReqOnlyValidationError{
+						field:  "StatusRequest",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, ManagementPlaneRequestReqOnlyValidationError{
+						field:  "StatusRequest",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(m.GetStatusRequest()).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return ManagementPlaneRequestReqOnlyValidationError{
+					field:  "StatusRequest",
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	case *ManagementPlaneRequestReqOnly_HealthRequest:
+		if v == nil {
+			err := ManagementPlaneRequestReqOnlyValidationError{
+				field:  "Request",
+				reason: "oneof value cannot be a typed-nil",
+			}
+			if !all {
+				return err
+			}
+			errors = append(errors, err)
+		}
+
+		if all {
+			switch v := interface{}(m.GetHealthRequest()).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, ManagementPlaneRequestReqOnlyValidationError{
+						field:  "HealthRequest",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, ManagementPlaneRequestReqOnlyValidationError{
+						field:  "HealthRequest",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(m.GetHealthRequest()).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return ManagementPlaneRequestReqOnlyValidationError{
+					field:  "HealthRequest",
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	case *ManagementPlaneRequestReqOnly_ConfigApplyRequest:
+		if v == nil {
+			err := ManagementPlaneRequestReqOnlyValidationError{
+				field:  "Request",
+				reason: "oneof value cannot be a typed-nil",
+			}
+			if !all {
+				return err
+			}
+			errors = append(errors, err)
+		}
+
+		if all {
+			switch v := interface{}(m.GetConfigApplyRequest()).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, ManagementPlaneRequestReqOnlyValidationError{
+						field:  "ConfigApplyRequest",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, ManagementPlaneRequestReqOnlyValidationError{
+						field:  "ConfigApplyRequest",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(m.GetConfigApplyRequest()).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return ManagementPlaneRequestReqOnlyValidationError{
+					field:  "ConfigApplyRequest",
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	case *ManagementPlaneRequestReqOnly_ConfigUploadRequest:
+		if v == nil {
+			err := ManagementPlaneRequestReqOnlyValidationError{
+				field:  "Request",
+				reason: "oneof value cannot be a typed-nil",
+			}
+			if !all {
+				return err
+			}
+			errors = append(errors, err)
+		}
+
+		if all {
+			switch v := interface{}(m.GetConfigUploadRequest()).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, ManagementPlaneRequestReqOnlyValidationError{
+						field:  "ConfigUploadRequest",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, ManagementPlaneRequestReqOnlyValidationError{
+						field:  "ConfigUploadRequest",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(m.GetConfigUploadRequest()).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return ManagementPlaneRequestReqOnlyValidationError{
+					field:  "ConfigUploadRequest",
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	case *ManagementPlaneRequestReqOnly_ActionRequest:
+		if v == nil {
+			err := ManagementPlaneRequestReqOnlyValidationError{
+				field:  "Request",
+				reason: "oneof value cannot be a typed-nil",
+			}
+			if !all {
+				return err
+			}
+			errors = append(errors, err)
+		}
+
+		if all {
+			switch v := interface{}(m.GetActionRequest()).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, ManagementPlaneRequestReqOnlyValidationError{
+						field:  "ActionRequest",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, ManagementPlaneRequestReqOnlyValidationError{
+						field:  "ActionRequest",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(m.GetActionRequest()).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return ManagementPlaneRequestReqOnlyValidationError{
+					field:  "ActionRequest",
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	case *ManagementPlaneRequestReqOnly_CommandStatusRequest:
+		if v == nil {
+			err := ManagementPlaneRequestReqOnlyValidationError{
+				field:  "Request",
+				reason: "oneof value cannot be a typed-nil",
+			}
+			if !all {
+				return err
+			}
+			errors = append(errors, err)
+		}
+
+		if all {
+			switch v := interface{}(m.GetCommandStatusRequest()).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, ManagementPlaneRequestReqOnlyValidationError{
+						field:  "CommandStatusRequest",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, ManagementPlaneRequestReqOnlyValidationError{
+						field:  "CommandStatusRequest",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(m.GetCommandStatusRequest()).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return ManagementPlaneRequestReqOnlyValidationError{
+					field:  "CommandStatusRequest",
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	default:
+		_ = v // ensures v is used
+	}
+
+	if len(errors) > 0 {
+		return ManagementPlaneRequestReqOnlyMultiError(errors)
+	}
+
+	return nil
+}
+
+// ManagementPlaneRequestReqOnlyMultiError is an error wrapping multiple
+// validation errors returned by ManagementPlaneRequestReqOnly.ValidateAll()
+// if the designated constraints aren't met.
+type ManagementPlaneRequestReqOnlyMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m ManagementPlaneRequestReqOnlyMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m ManagementPlaneRequestReqOnlyMultiError) AllErrors() []error { return m }
+
+// ManagementPlaneRequestReqOnlyValidationError is the validation error
+// returned by ManagementPlaneRequestReqOnly.Validate if the designated
+// constraints aren't met.
+type ManagementPlaneRequestReqOnlyValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e ManagementPlaneRequestReqOnlyValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e ManagementPlaneRequestReqOnlyValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e ManagementPlaneRequestReqOnlyValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e ManagementPlaneRequestReqOnlyValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e ManagementPlaneRequestReqOnlyValidationError) ErrorName() string {
+	return "ManagementPlaneRequestReqOnlyValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e ManagementPlaneRequestReqOnlyValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sManagementPlaneRequestReqOnly.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = ManagementPlaneRequestReqOnlyValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = ManagementPlaneRequestReqOnlyValidationError{}
+
+// Validate checks the field values on DataPlaneRequest with the rules defined
+// in the proto definition for this message. If any rules are violated, the
+// first error encountered is returned, or nil if there are no violations.
+func (m *DataPlaneRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on DataPlaneRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// DataPlaneRequestMultiError, or nil if none found.
+func (m *DataPlaneRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *DataPlaneRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	switch v := m.Request.(type) {
+	case *DataPlaneRequest_CreateConnectionRequest:
+		if v == nil {
+			err := DataPlaneRequestValidationError{
+				field:  "Request",
+				reason: "oneof value cannot be a typed-nil",
+			}
+			if !all {
+				return err
+			}
+			errors = append(errors, err)
+		}
+
+		if all {
+			switch v := interface{}(m.GetCreateConnectionRequest()).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, DataPlaneRequestValidationError{
+						field:  "CreateConnectionRequest",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, DataPlaneRequestValidationError{
+						field:  "CreateConnectionRequest",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(m.GetCreateConnectionRequest()).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return DataPlaneRequestValidationError{
+					field:  "CreateConnectionRequest",
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	case *DataPlaneRequest_UpdateDataPlaneStatusRequest:
+		if v == nil {
+			err := DataPlaneRequestValidationError{
+				field:  "Request",
+				reason: "oneof value cannot be a typed-nil",
+			}
+			if !all {
+				return err
+			}
+			errors = append(errors, err)
+		}
+
+		if all {
+			switch v := interface{}(m.GetUpdateDataPlaneStatusRequest()).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, DataPlaneRequestValidationError{
+						field:  "UpdateDataPlaneStatusRequest",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, DataPlaneRequestValidationError{
+						field:  "UpdateDataPlaneStatusRequest",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(m.GetUpdateDataPlaneStatusRequest()).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return DataPlaneRequestValidationError{
+					field:  "UpdateDataPlaneStatusRequest",
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	case *DataPlaneRequest_UpdateDataPlaneHealthRequest:
+		if v == nil {
+			err := DataPlaneRequestValidationError{
+				field:  "Request",
+				reason: "oneof value cannot be a typed-nil",
+			}
+			if !all {
+				return err
+			}
+			errors = append(errors, err)
+		}
+
+		if all {
+			switch v := interface{}(m.GetUpdateDataPlaneHealthRequest()).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, DataPlaneRequestValidationError{
+						field:  "UpdateDataPlaneHealthRequest",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, DataPlaneRequestValidationError{
+						field:  "UpdateDataPlaneHealthRequest",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(m.GetUpdateDataPlaneHealthRequest()).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return DataPlaneRequestValidationError{
+					field:  "UpdateDataPlaneHealthRequest",
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	default:
+		_ = v // ensures v is used
+	}
+
+	if len(errors) > 0 {
+		return DataPlaneRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// DataPlaneRequestMultiError is an error wrapping multiple validation errors
+// returned by DataPlaneRequest.ValidateAll() if the designated constraints
+// aren't met.
+type DataPlaneRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m DataPlaneRequestMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m DataPlaneRequestMultiError) AllErrors() []error { return m }
+
+// DataPlaneRequestValidationError is the validation error returned by
+// DataPlaneRequest.Validate if the designated constraints aren't met.
+type DataPlaneRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e DataPlaneRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e DataPlaneRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e DataPlaneRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e DataPlaneRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e DataPlaneRequestValidationError) ErrorName() string { return "DataPlaneRequestValidationError" }
+
+// Error satisfies the builtin error interface
+func (e DataPlaneRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sDataPlaneRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = DataPlaneRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = DataPlaneRequestValidationError{}
+
+// Validate checks the field values on CommandMessage with the rules defined in
+// the proto definition for this message. If any rules are violated, the first
+// error encountered is returned, or nil if there are no violations.
+func (m *CommandMessage) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on CommandMessage with the rules defined
+// in the proto definition for this message. If any rules are violated, the
+// result is a list of violation errors wrapped in CommandMessageMultiError,
+// or nil if none found.
+func (m *CommandMessage) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *CommandMessage) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if all {
+		switch v := interface{}(m.GetMeta()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, CommandMessageValidationError{
+					field:  "Meta",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, CommandMessageValidationError{
+					field:  "Meta",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetMeta()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return CommandMessageValidationError{
+				field:  "Meta",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	switch v := m.Message.(type) {
+	case *CommandMessage_ManagementRequest:
+		if v == nil {
+			err := CommandMessageValidationError{
+				field:  "Message",
+				reason: "oneof value cannot be a typed-nil",
+			}
+			if !all {
+				return err
+			}
+			errors = append(errors, err)
+		}
+
+		if all {
+			switch v := interface{}(m.GetManagementRequest()).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, CommandMessageValidationError{
+						field:  "ManagementRequest",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, CommandMessageValidationError{
+						field:  "ManagementRequest",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(m.GetManagementRequest()).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return CommandMessageValidationError{
+					field:  "ManagementRequest",
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	case *CommandMessage_DataPlaneRequest:
+		if v == nil {
+			err := CommandMessageValidationError{
+				field:  "Message",
+				reason: "oneof value cannot be a typed-nil",
+			}
+			if !all {
+				return err
+			}
+			errors = append(errors, err)
+		}
+
+		if all {
+			switch v := interface{}(m.GetDataPlaneRequest()).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, CommandMessageValidationError{
+						field:  "DataPlaneRequest",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, CommandMessageValidationError{
+						field:  "DataPlaneRequest",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(m.GetDataPlaneRequest()).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return CommandMessageValidationError{
+					field:  "DataPlaneRequest",
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	case *CommandMessage_UpdateOverview:
+		if v == nil {
+			err := CommandMessageValidationError{
+				field:  "Message",
+				reason: "oneof value cannot be a typed-nil",
+			}
+			if !all {
+				return err
+			}
+			errors = append(errors, err)
+		}
+
+		if all {
+			switch v := interface{}(m.GetUpdateOverview()).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, CommandMessageValidationError{
+						field:  "UpdateOverview",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, CommandMessageValidationError{
+						field:  "UpdateOverview",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(m.GetUpdateOverview()).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return CommandMessageValidationError{
+					field:  "UpdateOverview",
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	default:
+		_ = v // ensures v is used
+	}
+
+	if len(errors) > 0 {
+		return CommandMessageMultiError(errors)
+	}
+
+	return nil
+}
+
+// CommandMessageMultiError is an error wrapping multiple validation errors
+// returned by CommandMessage.ValidateAll() if the designated constraints
+// aren't met.
+type CommandMessageMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m CommandMessageMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m CommandMessageMultiError) AllErrors() []error { return m }
+
+// CommandMessageValidationError is the validation error returned by
+// CommandMessage.Validate if the designated constraints aren't met.
+type CommandMessageValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e CommandMessageValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e CommandMessageValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e CommandMessageValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e CommandMessageValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e CommandMessageValidationError) ErrorName() string { return "CommandMessageValidationError" }
+
+// Error satisfies the builtin error interface
+func (e CommandMessageValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sCommandMessage.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = CommandMessageValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = CommandMessageValidationError{}
+
 // Validate checks the field values on CreateConnectionRequest with the rules
 // defined in the proto definition for this message. If any rules are
 // violated, the first error encountered is returned, or nil if there are no violations.

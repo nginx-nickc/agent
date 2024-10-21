@@ -10,146 +10,65 @@ import (
 )
 
 type FakeCommandServiceClient struct {
-	CreateConnectionStub        func(context.Context, *v1.CreateConnectionRequest, ...grpc.CallOption) (*v1.CreateConnectionResponse, error)
-	createConnectionMutex       sync.RWMutex
-	createConnectionArgsForCall []struct {
-		arg1 context.Context
-		arg2 *v1.CreateConnectionRequest
-		arg3 []grpc.CallOption
-	}
-	createConnectionReturns struct {
-		result1 *v1.CreateConnectionResponse
-		result2 error
-	}
-	createConnectionReturnsOnCall map[int]struct {
-		result1 *v1.CreateConnectionResponse
-		result2 error
-	}
-	SubscribeStub        func(context.Context, ...grpc.CallOption) (grpc.BidiStreamingClient[v1.DataPlaneResponse, v1.ManagementPlaneRequest], error)
-	subscribeMutex       sync.RWMutex
-	subscribeArgsForCall []struct {
+	CommandChannelStub        func(context.Context, ...grpc.CallOption) (grpc.BidiStreamingClient[v1.CommandMessage, v1.CommandMessage], error)
+	commandChannelMutex       sync.RWMutex
+	commandChannelArgsForCall []struct {
 		arg1 context.Context
 		arg2 []grpc.CallOption
 	}
-	subscribeReturns struct {
-		result1 grpc.BidiStreamingClient[v1.DataPlaneResponse, v1.ManagementPlaneRequest]
+	commandChannelReturns struct {
+		result1 grpc.BidiStreamingClient[v1.CommandMessage, v1.CommandMessage]
 		result2 error
 	}
-	subscribeReturnsOnCall map[int]struct {
-		result1 grpc.BidiStreamingClient[v1.DataPlaneResponse, v1.ManagementPlaneRequest]
+	commandChannelReturnsOnCall map[int]struct {
+		result1 grpc.BidiStreamingClient[v1.CommandMessage, v1.CommandMessage]
 		result2 error
 	}
-	UpdateDataPlaneHealthStub        func(context.Context, *v1.UpdateDataPlaneHealthRequest, ...grpc.CallOption) (*v1.UpdateDataPlaneHealthResponse, error)
-	updateDataPlaneHealthMutex       sync.RWMutex
-	updateDataPlaneHealthArgsForCall []struct {
+	GetFileStub        func(context.Context, *v1.GetFileRequest, ...grpc.CallOption) (*v1.GetFileResponse, error)
+	getFileMutex       sync.RWMutex
+	getFileArgsForCall []struct {
 		arg1 context.Context
-		arg2 *v1.UpdateDataPlaneHealthRequest
+		arg2 *v1.GetFileRequest
 		arg3 []grpc.CallOption
 	}
-	updateDataPlaneHealthReturns struct {
-		result1 *v1.UpdateDataPlaneHealthResponse
+	getFileReturns struct {
+		result1 *v1.GetFileResponse
 		result2 error
 	}
-	updateDataPlaneHealthReturnsOnCall map[int]struct {
-		result1 *v1.UpdateDataPlaneHealthResponse
+	getFileReturnsOnCall map[int]struct {
+		result1 *v1.GetFileResponse
 		result2 error
 	}
-	UpdateDataPlaneStatusStub        func(context.Context, *v1.UpdateDataPlaneStatusRequest, ...grpc.CallOption) (*v1.UpdateDataPlaneStatusResponse, error)
-	updateDataPlaneStatusMutex       sync.RWMutex
-	updateDataPlaneStatusArgsForCall []struct {
+	UpdateFileStub        func(context.Context, *v1.UpdateFileRequest, ...grpc.CallOption) (*v1.UpdateFileResponse, error)
+	updateFileMutex       sync.RWMutex
+	updateFileArgsForCall []struct {
 		arg1 context.Context
-		arg2 *v1.UpdateDataPlaneStatusRequest
+		arg2 *v1.UpdateFileRequest
 		arg3 []grpc.CallOption
 	}
-	updateDataPlaneStatusReturns struct {
-		result1 *v1.UpdateDataPlaneStatusResponse
+	updateFileReturns struct {
+		result1 *v1.UpdateFileResponse
 		result2 error
 	}
-	updateDataPlaneStatusReturnsOnCall map[int]struct {
-		result1 *v1.UpdateDataPlaneStatusResponse
+	updateFileReturnsOnCall map[int]struct {
+		result1 *v1.UpdateFileResponse
 		result2 error
 	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *FakeCommandServiceClient) CreateConnection(arg1 context.Context, arg2 *v1.CreateConnectionRequest, arg3 ...grpc.CallOption) (*v1.CreateConnectionResponse, error) {
-	fake.createConnectionMutex.Lock()
-	ret, specificReturn := fake.createConnectionReturnsOnCall[len(fake.createConnectionArgsForCall)]
-	fake.createConnectionArgsForCall = append(fake.createConnectionArgsForCall, struct {
-		arg1 context.Context
-		arg2 *v1.CreateConnectionRequest
-		arg3 []grpc.CallOption
-	}{arg1, arg2, arg3})
-	stub := fake.CreateConnectionStub
-	fakeReturns := fake.createConnectionReturns
-	fake.recordInvocation("CreateConnection", []interface{}{arg1, arg2, arg3})
-	fake.createConnectionMutex.Unlock()
-	if stub != nil {
-		return stub(arg1, arg2, arg3...)
-	}
-	if specificReturn {
-		return ret.result1, ret.result2
-	}
-	return fakeReturns.result1, fakeReturns.result2
-}
-
-func (fake *FakeCommandServiceClient) CreateConnectionCallCount() int {
-	fake.createConnectionMutex.RLock()
-	defer fake.createConnectionMutex.RUnlock()
-	return len(fake.createConnectionArgsForCall)
-}
-
-func (fake *FakeCommandServiceClient) CreateConnectionCalls(stub func(context.Context, *v1.CreateConnectionRequest, ...grpc.CallOption) (*v1.CreateConnectionResponse, error)) {
-	fake.createConnectionMutex.Lock()
-	defer fake.createConnectionMutex.Unlock()
-	fake.CreateConnectionStub = stub
-}
-
-func (fake *FakeCommandServiceClient) CreateConnectionArgsForCall(i int) (context.Context, *v1.CreateConnectionRequest, []grpc.CallOption) {
-	fake.createConnectionMutex.RLock()
-	defer fake.createConnectionMutex.RUnlock()
-	argsForCall := fake.createConnectionArgsForCall[i]
-	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
-}
-
-func (fake *FakeCommandServiceClient) CreateConnectionReturns(result1 *v1.CreateConnectionResponse, result2 error) {
-	fake.createConnectionMutex.Lock()
-	defer fake.createConnectionMutex.Unlock()
-	fake.CreateConnectionStub = nil
-	fake.createConnectionReturns = struct {
-		result1 *v1.CreateConnectionResponse
-		result2 error
-	}{result1, result2}
-}
-
-func (fake *FakeCommandServiceClient) CreateConnectionReturnsOnCall(i int, result1 *v1.CreateConnectionResponse, result2 error) {
-	fake.createConnectionMutex.Lock()
-	defer fake.createConnectionMutex.Unlock()
-	fake.CreateConnectionStub = nil
-	if fake.createConnectionReturnsOnCall == nil {
-		fake.createConnectionReturnsOnCall = make(map[int]struct {
-			result1 *v1.CreateConnectionResponse
-			result2 error
-		})
-	}
-	fake.createConnectionReturnsOnCall[i] = struct {
-		result1 *v1.CreateConnectionResponse
-		result2 error
-	}{result1, result2}
-}
-
-func (fake *FakeCommandServiceClient) Subscribe(arg1 context.Context, arg2 ...grpc.CallOption) (grpc.BidiStreamingClient[v1.DataPlaneResponse, v1.ManagementPlaneRequest], error) {
-	fake.subscribeMutex.Lock()
-	ret, specificReturn := fake.subscribeReturnsOnCall[len(fake.subscribeArgsForCall)]
-	fake.subscribeArgsForCall = append(fake.subscribeArgsForCall, struct {
+func (fake *FakeCommandServiceClient) CommandChannel(arg1 context.Context, arg2 ...grpc.CallOption) (grpc.BidiStreamingClient[v1.CommandMessage, v1.CommandMessage], error) {
+	fake.commandChannelMutex.Lock()
+	ret, specificReturn := fake.commandChannelReturnsOnCall[len(fake.commandChannelArgsForCall)]
+	fake.commandChannelArgsForCall = append(fake.commandChannelArgsForCall, struct {
 		arg1 context.Context
 		arg2 []grpc.CallOption
 	}{arg1, arg2})
-	stub := fake.SubscribeStub
-	fakeReturns := fake.subscribeReturns
-	fake.recordInvocation("Subscribe", []interface{}{arg1, arg2})
-	fake.subscribeMutex.Unlock()
+	stub := fake.CommandChannelStub
+	fakeReturns := fake.commandChannelReturns
+	fake.recordInvocation("CommandChannel", []interface{}{arg1, arg2})
+	fake.commandChannelMutex.Unlock()
 	if stub != nil {
 		return stub(arg1, arg2...)
 	}
@@ -159,63 +78,63 @@ func (fake *FakeCommandServiceClient) Subscribe(arg1 context.Context, arg2 ...gr
 	return fakeReturns.result1, fakeReturns.result2
 }
 
-func (fake *FakeCommandServiceClient) SubscribeCallCount() int {
-	fake.subscribeMutex.RLock()
-	defer fake.subscribeMutex.RUnlock()
-	return len(fake.subscribeArgsForCall)
+func (fake *FakeCommandServiceClient) CommandChannelCallCount() int {
+	fake.commandChannelMutex.RLock()
+	defer fake.commandChannelMutex.RUnlock()
+	return len(fake.commandChannelArgsForCall)
 }
 
-func (fake *FakeCommandServiceClient) SubscribeCalls(stub func(context.Context, ...grpc.CallOption) (grpc.BidiStreamingClient[v1.DataPlaneResponse, v1.ManagementPlaneRequest], error)) {
-	fake.subscribeMutex.Lock()
-	defer fake.subscribeMutex.Unlock()
-	fake.SubscribeStub = stub
+func (fake *FakeCommandServiceClient) CommandChannelCalls(stub func(context.Context, ...grpc.CallOption) (grpc.BidiStreamingClient[v1.CommandMessage, v1.CommandMessage], error)) {
+	fake.commandChannelMutex.Lock()
+	defer fake.commandChannelMutex.Unlock()
+	fake.CommandChannelStub = stub
 }
 
-func (fake *FakeCommandServiceClient) SubscribeArgsForCall(i int) (context.Context, []grpc.CallOption) {
-	fake.subscribeMutex.RLock()
-	defer fake.subscribeMutex.RUnlock()
-	argsForCall := fake.subscribeArgsForCall[i]
+func (fake *FakeCommandServiceClient) CommandChannelArgsForCall(i int) (context.Context, []grpc.CallOption) {
+	fake.commandChannelMutex.RLock()
+	defer fake.commandChannelMutex.RUnlock()
+	argsForCall := fake.commandChannelArgsForCall[i]
 	return argsForCall.arg1, argsForCall.arg2
 }
 
-func (fake *FakeCommandServiceClient) SubscribeReturns(result1 grpc.BidiStreamingClient[v1.DataPlaneResponse, v1.ManagementPlaneRequest], result2 error) {
-	fake.subscribeMutex.Lock()
-	defer fake.subscribeMutex.Unlock()
-	fake.SubscribeStub = nil
-	fake.subscribeReturns = struct {
-		result1 grpc.BidiStreamingClient[v1.DataPlaneResponse, v1.ManagementPlaneRequest]
+func (fake *FakeCommandServiceClient) CommandChannelReturns(result1 grpc.BidiStreamingClient[v1.CommandMessage, v1.CommandMessage], result2 error) {
+	fake.commandChannelMutex.Lock()
+	defer fake.commandChannelMutex.Unlock()
+	fake.CommandChannelStub = nil
+	fake.commandChannelReturns = struct {
+		result1 grpc.BidiStreamingClient[v1.CommandMessage, v1.CommandMessage]
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeCommandServiceClient) SubscribeReturnsOnCall(i int, result1 grpc.BidiStreamingClient[v1.DataPlaneResponse, v1.ManagementPlaneRequest], result2 error) {
-	fake.subscribeMutex.Lock()
-	defer fake.subscribeMutex.Unlock()
-	fake.SubscribeStub = nil
-	if fake.subscribeReturnsOnCall == nil {
-		fake.subscribeReturnsOnCall = make(map[int]struct {
-			result1 grpc.BidiStreamingClient[v1.DataPlaneResponse, v1.ManagementPlaneRequest]
+func (fake *FakeCommandServiceClient) CommandChannelReturnsOnCall(i int, result1 grpc.BidiStreamingClient[v1.CommandMessage, v1.CommandMessage], result2 error) {
+	fake.commandChannelMutex.Lock()
+	defer fake.commandChannelMutex.Unlock()
+	fake.CommandChannelStub = nil
+	if fake.commandChannelReturnsOnCall == nil {
+		fake.commandChannelReturnsOnCall = make(map[int]struct {
+			result1 grpc.BidiStreamingClient[v1.CommandMessage, v1.CommandMessage]
 			result2 error
 		})
 	}
-	fake.subscribeReturnsOnCall[i] = struct {
-		result1 grpc.BidiStreamingClient[v1.DataPlaneResponse, v1.ManagementPlaneRequest]
+	fake.commandChannelReturnsOnCall[i] = struct {
+		result1 grpc.BidiStreamingClient[v1.CommandMessage, v1.CommandMessage]
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeCommandServiceClient) UpdateDataPlaneHealth(arg1 context.Context, arg2 *v1.UpdateDataPlaneHealthRequest, arg3 ...grpc.CallOption) (*v1.UpdateDataPlaneHealthResponse, error) {
-	fake.updateDataPlaneHealthMutex.Lock()
-	ret, specificReturn := fake.updateDataPlaneHealthReturnsOnCall[len(fake.updateDataPlaneHealthArgsForCall)]
-	fake.updateDataPlaneHealthArgsForCall = append(fake.updateDataPlaneHealthArgsForCall, struct {
+func (fake *FakeCommandServiceClient) GetFile(arg1 context.Context, arg2 *v1.GetFileRequest, arg3 ...grpc.CallOption) (*v1.GetFileResponse, error) {
+	fake.getFileMutex.Lock()
+	ret, specificReturn := fake.getFileReturnsOnCall[len(fake.getFileArgsForCall)]
+	fake.getFileArgsForCall = append(fake.getFileArgsForCall, struct {
 		arg1 context.Context
-		arg2 *v1.UpdateDataPlaneHealthRequest
+		arg2 *v1.GetFileRequest
 		arg3 []grpc.CallOption
 	}{arg1, arg2, arg3})
-	stub := fake.UpdateDataPlaneHealthStub
-	fakeReturns := fake.updateDataPlaneHealthReturns
-	fake.recordInvocation("UpdateDataPlaneHealth", []interface{}{arg1, arg2, arg3})
-	fake.updateDataPlaneHealthMutex.Unlock()
+	stub := fake.GetFileStub
+	fakeReturns := fake.getFileReturns
+	fake.recordInvocation("GetFile", []interface{}{arg1, arg2, arg3})
+	fake.getFileMutex.Unlock()
 	if stub != nil {
 		return stub(arg1, arg2, arg3...)
 	}
@@ -225,63 +144,63 @@ func (fake *FakeCommandServiceClient) UpdateDataPlaneHealth(arg1 context.Context
 	return fakeReturns.result1, fakeReturns.result2
 }
 
-func (fake *FakeCommandServiceClient) UpdateDataPlaneHealthCallCount() int {
-	fake.updateDataPlaneHealthMutex.RLock()
-	defer fake.updateDataPlaneHealthMutex.RUnlock()
-	return len(fake.updateDataPlaneHealthArgsForCall)
+func (fake *FakeCommandServiceClient) GetFileCallCount() int {
+	fake.getFileMutex.RLock()
+	defer fake.getFileMutex.RUnlock()
+	return len(fake.getFileArgsForCall)
 }
 
-func (fake *FakeCommandServiceClient) UpdateDataPlaneHealthCalls(stub func(context.Context, *v1.UpdateDataPlaneHealthRequest, ...grpc.CallOption) (*v1.UpdateDataPlaneHealthResponse, error)) {
-	fake.updateDataPlaneHealthMutex.Lock()
-	defer fake.updateDataPlaneHealthMutex.Unlock()
-	fake.UpdateDataPlaneHealthStub = stub
+func (fake *FakeCommandServiceClient) GetFileCalls(stub func(context.Context, *v1.GetFileRequest, ...grpc.CallOption) (*v1.GetFileResponse, error)) {
+	fake.getFileMutex.Lock()
+	defer fake.getFileMutex.Unlock()
+	fake.GetFileStub = stub
 }
 
-func (fake *FakeCommandServiceClient) UpdateDataPlaneHealthArgsForCall(i int) (context.Context, *v1.UpdateDataPlaneHealthRequest, []grpc.CallOption) {
-	fake.updateDataPlaneHealthMutex.RLock()
-	defer fake.updateDataPlaneHealthMutex.RUnlock()
-	argsForCall := fake.updateDataPlaneHealthArgsForCall[i]
+func (fake *FakeCommandServiceClient) GetFileArgsForCall(i int) (context.Context, *v1.GetFileRequest, []grpc.CallOption) {
+	fake.getFileMutex.RLock()
+	defer fake.getFileMutex.RUnlock()
+	argsForCall := fake.getFileArgsForCall[i]
 	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
 }
 
-func (fake *FakeCommandServiceClient) UpdateDataPlaneHealthReturns(result1 *v1.UpdateDataPlaneHealthResponse, result2 error) {
-	fake.updateDataPlaneHealthMutex.Lock()
-	defer fake.updateDataPlaneHealthMutex.Unlock()
-	fake.UpdateDataPlaneHealthStub = nil
-	fake.updateDataPlaneHealthReturns = struct {
-		result1 *v1.UpdateDataPlaneHealthResponse
+func (fake *FakeCommandServiceClient) GetFileReturns(result1 *v1.GetFileResponse, result2 error) {
+	fake.getFileMutex.Lock()
+	defer fake.getFileMutex.Unlock()
+	fake.GetFileStub = nil
+	fake.getFileReturns = struct {
+		result1 *v1.GetFileResponse
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeCommandServiceClient) UpdateDataPlaneHealthReturnsOnCall(i int, result1 *v1.UpdateDataPlaneHealthResponse, result2 error) {
-	fake.updateDataPlaneHealthMutex.Lock()
-	defer fake.updateDataPlaneHealthMutex.Unlock()
-	fake.UpdateDataPlaneHealthStub = nil
-	if fake.updateDataPlaneHealthReturnsOnCall == nil {
-		fake.updateDataPlaneHealthReturnsOnCall = make(map[int]struct {
-			result1 *v1.UpdateDataPlaneHealthResponse
+func (fake *FakeCommandServiceClient) GetFileReturnsOnCall(i int, result1 *v1.GetFileResponse, result2 error) {
+	fake.getFileMutex.Lock()
+	defer fake.getFileMutex.Unlock()
+	fake.GetFileStub = nil
+	if fake.getFileReturnsOnCall == nil {
+		fake.getFileReturnsOnCall = make(map[int]struct {
+			result1 *v1.GetFileResponse
 			result2 error
 		})
 	}
-	fake.updateDataPlaneHealthReturnsOnCall[i] = struct {
-		result1 *v1.UpdateDataPlaneHealthResponse
+	fake.getFileReturnsOnCall[i] = struct {
+		result1 *v1.GetFileResponse
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeCommandServiceClient) UpdateDataPlaneStatus(arg1 context.Context, arg2 *v1.UpdateDataPlaneStatusRequest, arg3 ...grpc.CallOption) (*v1.UpdateDataPlaneStatusResponse, error) {
-	fake.updateDataPlaneStatusMutex.Lock()
-	ret, specificReturn := fake.updateDataPlaneStatusReturnsOnCall[len(fake.updateDataPlaneStatusArgsForCall)]
-	fake.updateDataPlaneStatusArgsForCall = append(fake.updateDataPlaneStatusArgsForCall, struct {
+func (fake *FakeCommandServiceClient) UpdateFile(arg1 context.Context, arg2 *v1.UpdateFileRequest, arg3 ...grpc.CallOption) (*v1.UpdateFileResponse, error) {
+	fake.updateFileMutex.Lock()
+	ret, specificReturn := fake.updateFileReturnsOnCall[len(fake.updateFileArgsForCall)]
+	fake.updateFileArgsForCall = append(fake.updateFileArgsForCall, struct {
 		arg1 context.Context
-		arg2 *v1.UpdateDataPlaneStatusRequest
+		arg2 *v1.UpdateFileRequest
 		arg3 []grpc.CallOption
 	}{arg1, arg2, arg3})
-	stub := fake.UpdateDataPlaneStatusStub
-	fakeReturns := fake.updateDataPlaneStatusReturns
-	fake.recordInvocation("UpdateDataPlaneStatus", []interface{}{arg1, arg2, arg3})
-	fake.updateDataPlaneStatusMutex.Unlock()
+	stub := fake.UpdateFileStub
+	fakeReturns := fake.updateFileReturns
+	fake.recordInvocation("UpdateFile", []interface{}{arg1, arg2, arg3})
+	fake.updateFileMutex.Unlock()
 	if stub != nil {
 		return stub(arg1, arg2, arg3...)
 	}
@@ -291,47 +210,47 @@ func (fake *FakeCommandServiceClient) UpdateDataPlaneStatus(arg1 context.Context
 	return fakeReturns.result1, fakeReturns.result2
 }
 
-func (fake *FakeCommandServiceClient) UpdateDataPlaneStatusCallCount() int {
-	fake.updateDataPlaneStatusMutex.RLock()
-	defer fake.updateDataPlaneStatusMutex.RUnlock()
-	return len(fake.updateDataPlaneStatusArgsForCall)
+func (fake *FakeCommandServiceClient) UpdateFileCallCount() int {
+	fake.updateFileMutex.RLock()
+	defer fake.updateFileMutex.RUnlock()
+	return len(fake.updateFileArgsForCall)
 }
 
-func (fake *FakeCommandServiceClient) UpdateDataPlaneStatusCalls(stub func(context.Context, *v1.UpdateDataPlaneStatusRequest, ...grpc.CallOption) (*v1.UpdateDataPlaneStatusResponse, error)) {
-	fake.updateDataPlaneStatusMutex.Lock()
-	defer fake.updateDataPlaneStatusMutex.Unlock()
-	fake.UpdateDataPlaneStatusStub = stub
+func (fake *FakeCommandServiceClient) UpdateFileCalls(stub func(context.Context, *v1.UpdateFileRequest, ...grpc.CallOption) (*v1.UpdateFileResponse, error)) {
+	fake.updateFileMutex.Lock()
+	defer fake.updateFileMutex.Unlock()
+	fake.UpdateFileStub = stub
 }
 
-func (fake *FakeCommandServiceClient) UpdateDataPlaneStatusArgsForCall(i int) (context.Context, *v1.UpdateDataPlaneStatusRequest, []grpc.CallOption) {
-	fake.updateDataPlaneStatusMutex.RLock()
-	defer fake.updateDataPlaneStatusMutex.RUnlock()
-	argsForCall := fake.updateDataPlaneStatusArgsForCall[i]
+func (fake *FakeCommandServiceClient) UpdateFileArgsForCall(i int) (context.Context, *v1.UpdateFileRequest, []grpc.CallOption) {
+	fake.updateFileMutex.RLock()
+	defer fake.updateFileMutex.RUnlock()
+	argsForCall := fake.updateFileArgsForCall[i]
 	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
 }
 
-func (fake *FakeCommandServiceClient) UpdateDataPlaneStatusReturns(result1 *v1.UpdateDataPlaneStatusResponse, result2 error) {
-	fake.updateDataPlaneStatusMutex.Lock()
-	defer fake.updateDataPlaneStatusMutex.Unlock()
-	fake.UpdateDataPlaneStatusStub = nil
-	fake.updateDataPlaneStatusReturns = struct {
-		result1 *v1.UpdateDataPlaneStatusResponse
+func (fake *FakeCommandServiceClient) UpdateFileReturns(result1 *v1.UpdateFileResponse, result2 error) {
+	fake.updateFileMutex.Lock()
+	defer fake.updateFileMutex.Unlock()
+	fake.UpdateFileStub = nil
+	fake.updateFileReturns = struct {
+		result1 *v1.UpdateFileResponse
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeCommandServiceClient) UpdateDataPlaneStatusReturnsOnCall(i int, result1 *v1.UpdateDataPlaneStatusResponse, result2 error) {
-	fake.updateDataPlaneStatusMutex.Lock()
-	defer fake.updateDataPlaneStatusMutex.Unlock()
-	fake.UpdateDataPlaneStatusStub = nil
-	if fake.updateDataPlaneStatusReturnsOnCall == nil {
-		fake.updateDataPlaneStatusReturnsOnCall = make(map[int]struct {
-			result1 *v1.UpdateDataPlaneStatusResponse
+func (fake *FakeCommandServiceClient) UpdateFileReturnsOnCall(i int, result1 *v1.UpdateFileResponse, result2 error) {
+	fake.updateFileMutex.Lock()
+	defer fake.updateFileMutex.Unlock()
+	fake.UpdateFileStub = nil
+	if fake.updateFileReturnsOnCall == nil {
+		fake.updateFileReturnsOnCall = make(map[int]struct {
+			result1 *v1.UpdateFileResponse
 			result2 error
 		})
 	}
-	fake.updateDataPlaneStatusReturnsOnCall[i] = struct {
-		result1 *v1.UpdateDataPlaneStatusResponse
+	fake.updateFileReturnsOnCall[i] = struct {
+		result1 *v1.UpdateFileResponse
 		result2 error
 	}{result1, result2}
 }
@@ -339,14 +258,12 @@ func (fake *FakeCommandServiceClient) UpdateDataPlaneStatusReturnsOnCall(i int, 
 func (fake *FakeCommandServiceClient) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
-	fake.createConnectionMutex.RLock()
-	defer fake.createConnectionMutex.RUnlock()
-	fake.subscribeMutex.RLock()
-	defer fake.subscribeMutex.RUnlock()
-	fake.updateDataPlaneHealthMutex.RLock()
-	defer fake.updateDataPlaneHealthMutex.RUnlock()
-	fake.updateDataPlaneStatusMutex.RLock()
-	defer fake.updateDataPlaneStatusMutex.RUnlock()
+	fake.commandChannelMutex.RLock()
+	defer fake.commandChannelMutex.RUnlock()
+	fake.getFileMutex.RLock()
+	defer fake.getFileMutex.RUnlock()
+	fake.updateFileMutex.RLock()
+	defer fake.updateFileMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value

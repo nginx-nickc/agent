@@ -15,26 +15,85 @@ import "mpi/v1/files.proto";
 import "google/protobuf/struct.proto";
 import "buf/validate/validate.proto";
 
-// A service outlining the command and control options for a Data Plane Client
-// All operations are written from a client perspective
-// The RPC calls generally flow Client -> Server, except for Subscribe which contains a bidirectional stream
-// The ManagementPlaneRequest sent in the Subscribe stream triggers one or more client actions.
-// Messages provided by the Management Plane must be a FIFO ordered queue. Messages in the queue must have a monotonically-increasing integer index. 
-// The indexes do not need to be sequential. The index must be a 64-bit signed integer.
-// The index must not reset for the entire lifetime of a unique Agent (i.e. the index does not reset to 0 only because of a temporary disconnection or new session). 
-// Messages must not be removed from the Management Plane queue until Ack’d by the Agent. 
-// Messages sent but not yet Ack’d must be kept in an “in-flight” buffer as they may need to be retried.
+// A service outlining the command and control options for a Data Plane Client. CommandMessage is common between
+// request/response for demonstration purpose only. It may be desirable to have specific request (from the agent)
+// and response (from the server), but naming should be keeping with convention (Request from agent, Response from server).
 service CommandService {
-    // Connects NGINX Agent to the Management Plane agnostic of instance data
-    rpc CreateConnection(CreateConnectionRequest) returns (CreateConnectionResponse) {}
-    // Reports on instances and their configurations
-    rpc UpdateDataPlaneStatus(UpdateDataPlaneStatusRequest) returns (UpdateDataPlaneStatusResponse) {}
-    // Reports on instance health
-    rpc UpdateDataPlaneHealth(UpdateDataPlaneHealthRequest) returns (UpdateDataPlaneHealthResponse) {}
-    // A decoupled communication mechanism between the data plane and management plane.
-    // buf:lint:ignore RPC_RESPONSE_STANDARD_NAME
-    // buf:lint:ignore RPC_REQUEST_STANDARD_NAME
-    rpc Subscribe(stream DataPlaneResponse) returns (stream ManagementPlaneRequest) {}
+    // Get the file contents for a particular file
+    rpc GetFile(GetFileRequest) returns (GetFileResponse) {}
+    // Update a file from the Agent to the Server
+    rpc UpdateFile(UpdateFileRequest) returns (UpdateFileResponse) {}
+
+    // a bi-directional stream using the same CommandMessage for agent and management-plane
+    rpc CommandChannel(stream CommandMessage) returns (stream CommandMessage) {}
+}
+
+// ManagementPlaneRequest represents requests from the management-plane (server).
+message ManagementPlaneRequestReqOnly {
+    oneof request {
+        // management-plane to agent triggers a DataPlaneStatus response
+        StatusRequest status_request = 1;
+        // management-plane to agent triggers a DataPlaneHealth response
+        HealthRequest health_request = 2;
+        // management-plane to agent triggers a config_apply_request
+        ConfigApplyRequest config_apply_request = 3;
+        // management-plane to agent triggers a config_upload_request
+        ConfigUploadRequest config_upload_request = 4;
+        // management-plane to agent triggers a action_request
+        APIActionRequest action_request = 5;
+        // management-plane to agent triggers a command_status_request
+        CommandStatusRequest command_status_request = 6;
+    }
+}
+
+// A Management Plane request for information, triggers an associated rpc on the Data Plane
+message ManagementPlaneRequest {
+    // Meta-information associated with a message
+    mpi.v1.MessageMeta message_meta = 1;
+    oneof request {
+        // triggers a DataPlaneStatus rpc
+        StatusRequest status_request = 2;
+        // triggers a DataPlaneHealth rpc
+        HealthRequest health_request = 3;
+        // triggers a rpc GetFile(FileRequest) for overview list, 
+        // if overview is missing, triggers a rpc GetOverview(ConfigVersion) first
+        ConfigApplyRequest config_apply_request = 5;
+        // triggers a series of rpc UpdateFile(File) for that instances
+        ConfigUploadRequest config_upload_request = 6;
+        // triggers a DataPlaneResponse with a command_response for a particular action
+        APIActionRequest action_request = 7;
+        // triggers a DataPlaneResponse with a command_response for a particular correlation_id
+        CommandStatusRequest command_status_request = 8;
+    }
+}
+
+
+// DataPlaneRequest represents requests from the data-plane (agent).
+message DataPlaneRequest {
+    oneof request {
+        // agent to management-plane to create the initial connection
+        CreateConnectionRequest create_connection_request = 1;
+        // agent to management-plane to update the data-plane-status in response to status_request
+        UpdateDataPlaneStatusRequest update_data_plane_status_request = 2;
+        // agent to management-plane to update the data-plane-health, in response to health_request
+        UpdateDataPlaneHealthRequest update_data_plane_health_request = 3;
+    }
+}
+
+// A singular CommandMessage type allows extensibility
+message CommandMessage {
+    // Meta-information associated with a message
+    mpi.v1.MessageMeta meta = 1;
+    oneof message {
+        // request from the management plane
+        ManagementPlaneRequestReqOnly management_request = 2;
+        // "requests" from the data plane, should not be sent from the management plane
+        // some of these are actually responses to management requests, but keeping original names to minimize 
+        // change.
+        DataPlaneRequest data_plane_request = 3;
+        // update overview from agent to management plane
+        mpi.v1.FileOverview update_overview = 4;
+    }
 }
 
 // The connection request is an initial handshake to establish a connection, sending NGINX Agent instance information
@@ -149,26 +208,6 @@ message DataPlaneResponse {
     string instance_id = 3;
 }
 
-// A Management Plane request for information, triggers an associated rpc on the Data Plane
-message ManagementPlaneRequest {
-    // Meta-information associated with a message
-    mpi.v1.MessageMeta message_meta = 1;
-    oneof request {
-        // triggers a DataPlaneStatus rpc
-        StatusRequest status_request = 2;
-        // triggers a DataPlaneHealth rpc
-        HealthRequest health_request = 3;
-        // triggers a rpc GetFile(FileRequest) for overview list, 
-        // if overview is missing, triggers a rpc GetOverview(ConfigVersion) first
-        ConfigApplyRequest config_apply_request = 5;
-        // triggers a series of rpc UpdateFile(File) for that instances
-        ConfigUploadRequest config_upload_request = 6;
-        // triggers a DataPlaneResponse with a command_response for a particular action
-        APIActionRequest action_request = 7;
-        // triggers a DataPlaneResponse with a command_response for a particular correlation_id
-        CommandStatusRequest command_status_request = 8;
-    }
-}
 
 // Additional information associated with a StatusRequest
 message StatusRequest {}

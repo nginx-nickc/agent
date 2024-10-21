@@ -31,6 +31,7 @@
 - [mpi/v1/command.proto](#mpi_v1_command-proto)
     - [APIActionRequest](#mpi-v1-APIActionRequest)
     - [AgentConfig](#mpi-v1-AgentConfig)
+    - [CommandMessage](#mpi-v1-CommandMessage)
     - [CommandServer](#mpi-v1-CommandServer)
     - [CommandStatusRequest](#mpi-v1-CommandStatusRequest)
     - [ConfigApplyRequest](#mpi-v1-ConfigApplyRequest)
@@ -38,6 +39,7 @@
     - [ContainerInfo](#mpi-v1-ContainerInfo)
     - [CreateConnectionRequest](#mpi-v1-CreateConnectionRequest)
     - [CreateConnectionResponse](#mpi-v1-CreateConnectionResponse)
+    - [DataPlaneRequest](#mpi-v1-DataPlaneRequest)
     - [DataPlaneResponse](#mpi-v1-DataPlaneResponse)
     - [FileServer](#mpi-v1-FileServer)
     - [HealthRequest](#mpi-v1-HealthRequest)
@@ -50,6 +52,7 @@
     - [InstanceMeta](#mpi-v1-InstanceMeta)
     - [InstanceRuntime](#mpi-v1-InstanceRuntime)
     - [ManagementPlaneRequest](#mpi-v1-ManagementPlaneRequest)
+    - [ManagementPlaneRequestReqOnly](#mpi-v1-ManagementPlaneRequestReqOnly)
     - [MetricsServer](#mpi-v1-MetricsServer)
     - [NGINXPlusRuntimeInfo](#mpi-v1-NGINXPlusRuntimeInfo)
     - [NGINXRuntimeInfo](#mpi-v1-NGINXRuntimeInfo)
@@ -427,6 +430,24 @@ This contains a series of NGINX Agent configurations
 
 
 
+<a name="mpi-v1-CommandMessage"></a>
+
+### CommandMessage
+A singular CommandMessage type allows extensibility
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| meta | [MessageMeta](#mpi-v1-MessageMeta) |  | Meta-information associated with a message |
+| management_request | [ManagementPlaneRequestReqOnly](#mpi-v1-ManagementPlaneRequestReqOnly) |  |  |
+| data_plane_request | [DataPlaneRequest](#mpi-v1-DataPlaneRequest) |  |  |
+| update_overview | [FileOverview](#mpi-v1-FileOverview) |  |  |
+
+
+
+
+
+
 <a name="mpi-v1-CommandServer"></a>
 
 ### CommandServer
@@ -518,6 +539,23 @@ A response to a CreateConnectionRequest
 | ----- | ---- | ----- | ----------- |
 | response | [CommandResponse](#mpi-v1-CommandResponse) |  | The success or failure of the CreateConnectionRequest |
 | agent_config | [AgentConfig](#mpi-v1-AgentConfig) |  | The recommendation NGINX Agent configurations provided by the ManagementPlane |
+
+
+
+
+
+
+<a name="mpi-v1-DataPlaneRequest"></a>
+
+### DataPlaneRequest
+DataPlaneRequest represents requests from the data-plane (agent).
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| create_connection_request | [CreateConnectionRequest](#mpi-v1-CreateConnectionRequest) |  | agent to management-plane to create the initial connection |
+| update_data_plane_status_request | [UpdateDataPlaneStatusRequest](#mpi-v1-UpdateDataPlaneStatusRequest) |  | agent to management-plane to update the data-plane-status in response to status_request |
+| update_data_plane_health_request | [UpdateDataPlaneHealthRequest](#mpi-v1-UpdateDataPlaneHealthRequest) |  | agent to management-plane to update the data-plane-health, in response to health_request |
 
 
 
@@ -711,6 +749,26 @@ A Management Plane request for information, triggers an associated rpc on the Da
 
 
 
+<a name="mpi-v1-ManagementPlaneRequestReqOnly"></a>
+
+### ManagementPlaneRequestReqOnly
+ManagementPlaneRequest represents requests from the management-plane (server).
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| status_request | [StatusRequest](#mpi-v1-StatusRequest) |  | management-plane to agent triggers a DataPlaneStatus response |
+| health_request | [HealthRequest](#mpi-v1-HealthRequest) |  | management-plane to agent triggers a DataPlaneHealth response |
+| config_apply_request | [ConfigApplyRequest](#mpi-v1-ConfigApplyRequest) |  | management-plane to agent triggers a config_apply_request |
+| config_upload_request | [ConfigUploadRequest](#mpi-v1-ConfigUploadRequest) |  | management-plane to agent triggers a config_upload_request |
+| action_request | [APIActionRequest](#mpi-v1-APIActionRequest) |  | management-plane to agent triggers a action_request |
+| command_status_request | [CommandStatusRequest](#mpi-v1-CommandStatusRequest) |  | management-plane to agent triggers a command_status_request |
+
+
+
+
+
+
 <a name="mpi-v1-MetricsServer"></a>
 
 ### MetricsServer
@@ -897,22 +955,15 @@ the types of instances possible
 <a name="mpi-v1-CommandService"></a>
 
 ### CommandService
-A service outlining the command and control options for a Data Plane Client
-All operations are written from a client perspective
-The RPC calls generally flow Client -&gt; Server, except for Subscribe which contains a bidirectional stream
-The ManagementPlaneRequest sent in the Subscribe stream triggers one or more client actions.
-Messages provided by the Management Plane must be a FIFO ordered queue. Messages in the queue must have a monotonically-increasing integer index. 
-The indexes do not need to be sequential. The index must be a 64-bit signed integer.
-The index must not reset for the entire lifetime of a unique Agent (i.e. the index does not reset to 0 only because of a temporary disconnection or new session). 
-Messages must not be removed from the Management Plane queue until Ack’d by the Agent. 
-Messages sent but not yet Ack’d must be kept in an “in-flight” buffer as they may need to be retried.
+A service outlining the command and control options for a Data Plane Client. CommandMessage is common between
+request/response for demonstration purpose only. It may be desirable to have specific request (from the agent)
+and response (from the server), but naming should be keeping with convention (Request from agent, Response from server).
 
 | Method Name | Request Type | Response Type | Description |
 | ----------- | ------------ | ------------- | ------------|
-| CreateConnection | [CreateConnectionRequest](#mpi-v1-CreateConnectionRequest) | [CreateConnectionResponse](#mpi-v1-CreateConnectionResponse) | Connects NGINX Agent to the Management Plane agnostic of instance data |
-| UpdateDataPlaneStatus | [UpdateDataPlaneStatusRequest](#mpi-v1-UpdateDataPlaneStatusRequest) | [UpdateDataPlaneStatusResponse](#mpi-v1-UpdateDataPlaneStatusResponse) | Reports on instances and their configurations |
-| UpdateDataPlaneHealth | [UpdateDataPlaneHealthRequest](#mpi-v1-UpdateDataPlaneHealthRequest) | [UpdateDataPlaneHealthResponse](#mpi-v1-UpdateDataPlaneHealthResponse) | Reports on instance health |
-| Subscribe | [DataPlaneResponse](#mpi-v1-DataPlaneResponse) stream | [ManagementPlaneRequest](#mpi-v1-ManagementPlaneRequest) stream | A decoupled communication mechanism between the data plane and management plane. buf:lint:ignore RPC_RESPONSE_STANDARD_NAME buf:lint:ignore RPC_REQUEST_STANDARD_NAME |
+| GetFile | [GetFileRequest](#mpi-v1-GetFileRequest) | [GetFileResponse](#mpi-v1-GetFileResponse) | Get the file contents for a particular file |
+| UpdateFile | [UpdateFileRequest](#mpi-v1-UpdateFileRequest) | [UpdateFileResponse](#mpi-v1-UpdateFileResponse) | Update a file from the Agent to the Server |
+| CommandChannel | [CommandMessage](#mpi-v1-CommandMessage) stream | [CommandMessage](#mpi-v1-CommandMessage) stream | a bi-directional stream using the same CommandMessage for agent and management-plane |
 
  
 
